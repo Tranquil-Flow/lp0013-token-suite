@@ -164,10 +164,9 @@ cargo clippy --workspace --all-targets -- -D warnings
 
 Narrated terminal demo (RISC0_DEV_MODE=0 live LEZ lifecycle): <https://youtu.be/3hQd2G8O-UM>
 
-## Remaining work before PR
+## λPrize PR
 
-1. Push to the intended public repo only after Evi signs off.
-2. Open the Logos λPrize PR only after Evi signs off.
+Submitted upstream as <https://github.com/logos-co/lambda-prize/pull/57>.
 
 ## Suggested PR checklist
 
