@@ -1,0 +1,320 @@
+{
+  "version": "0.1.0",
+  "name": "admin_authority",
+  "instructions": [
+    {
+      "name": "create_mint",
+      "variant": "CreateMint",
+      "discriminator": [24, 83, 190, 127, 66, 211, 5, 17],
+      "execution": {
+        "public": true,
+        "private_owned": false
+      },
+      "accounts": [
+        {
+          "name": "mint",
+          "writable": true,
+          "signer": false,
+          "init": true,
+          "visibility": ["public"],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "literal",
+                "value": "lp0013:mint:v1"
+              },
+              {
+                "kind": "account",
+                "value": "mint"
+              }
+            ]
+          },
+          "comment": "MintDefinition account initialized with either Some(authority) for variable supply or None for fixed/revoked supply."
+        }
+      ],
+      "args": [
+        {
+          "name": "mint",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "authority",
+          "type": {
+            "option": {
+              "array": ["u8", 32]
+            }
+          }
+        },
+        {
+          "name": "decimals",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "mint_to",
+      "variant": "MintTo",
+      "discriminator": [37, 98, 54, 201, 83, 12, 7, 241],
+      "execution": {
+        "public": true,
+        "private_owned": false
+      },
+      "accounts": [
+        {
+          "name": "mint",
+          "writable": true,
+          "signer": false,
+          "init": false,
+          "visibility": ["public"],
+          "comment": "Existing MintDefinition account whose AuthorityInfo must authorize signer."
+        },
+        {
+          "name": "holding",
+          "writable": true,
+          "signer": false,
+          "init": false,
+          "visibility": ["public"],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "literal",
+                "value": "lp0013:holding:v1"
+              },
+              {
+                "kind": "account",
+                "value": "mint"
+              },
+              {
+                "kind": "account",
+                "value": "destination_owner"
+              }
+            ]
+          },
+          "comment": "TokenHolding account for (mint, destination_owner); created-if-default in the runtime harness."
+        },
+        {
+          "name": "signer",
+          "writable": false,
+          "signer": true,
+          "init": false,
+          "visibility": ["public"],
+          "comment": "Must match the current mint authority."
+        }
+      ],
+      "args": [
+        {
+          "name": "mint",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "signer",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "destination_owner",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u128"
+        }
+      ]
+    },
+    {
+      "name": "set_mint_authority",
+      "variant": "SetMintAuthority",
+      "discriminator": [93, 71, 165, 44, 139, 210, 87, 15],
+      "execution": {
+        "public": true,
+        "private_owned": false
+      },
+      "accounts": [
+        {
+          "name": "mint",
+          "writable": true,
+          "signer": false,
+          "init": false,
+          "visibility": ["public"],
+          "comment": "Existing MintDefinition account. Rotation/revocation is atomic: failed authorization leaves state unchanged."
+        },
+        {
+          "name": "signer",
+          "writable": false,
+          "signer": true,
+          "init": false,
+          "visibility": ["public"],
+          "comment": "Must match current authority; rejected after authority has been revoked."
+        }
+      ],
+      "args": [
+        {
+          "name": "mint",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "signer",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "new_authority",
+          "type": {
+            "option": {
+              "array": ["u8", 32]
+            }
+          },
+          "comment": "Some(account) rotates authority; None revokes authority and fixes future supply."
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "AuthorityInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority_type",
+            "type": {
+              "defined": "AuthorityType"
+            }
+          },
+          {
+            "name": "current_authority",
+            "type": {
+              "option": {
+                "array": ["u8", 32]
+              }
+            },
+            "comment": "None means permanently revoked unless a future migration deliberately introduces a new authority domain."
+          }
+        ]
+      }
+    },
+    {
+      "name": "MintDefinition",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "decimals",
+            "type": "u8"
+          },
+          {
+            "name": "supply",
+            "type": "u128"
+          },
+          {
+            "name": "mint_authority",
+            "type": {
+              "defined": "AuthorityInfo"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenHolding",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": {
+              "array": ["u8", 32]
+            }
+          },
+          {
+            "name": "owner",
+            "type": {
+              "array": ["u8", 32]
+            }
+          },
+          {
+            "name": "balance",
+            "type": "u128"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "AuthorityType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "MintTokens"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenError",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "AuthorityRevoked",
+            "comment": "The requested action requires an authority, but it has been revoked."
+          },
+          {
+            "name": "UnauthorizedAuthority",
+            "comment": "The signer does not match the currently configured authority."
+          },
+          {
+            "name": "ZeroAmount"
+          },
+          {
+            "name": "SupplyOverflow"
+          },
+          {
+            "name": "BalanceOverflow"
+          }
+        ]
+      }
+    }
+  ],
+  "constants": [
+    {
+      "name": "MINT_PDA_DOMAIN",
+      "type": "string",
+      "value": "lp0013:mint:v1"
+    },
+    {
+      "name": "HOLDING_PDA_DOMAIN",
+      "type": "string",
+      "value": "lp0013:holding:v1"
+    },
+    {
+      "name": "CONFIG_AUTHORITY_DOMAIN",
+      "type": "string",
+      "value": "lp0013:mint-authority"
+    }
+  ],
+  "metadata": {
+    "spec_version": "lssa-idl/0.1.0",
+    "generation": "hand-written",
+    "tooling_status": "spel-unavailable-in-this-container",
+    "generation_reason": "The local container has rustc/cargo but no spel, lgs, or cargo-risczero binaries. This artifact preserves the intended SPEL/IDL surface until the real Logos toolchain can regenerate it from #[lez_program] annotations.",
+    "source_crates": [
+      "admin-authority-core",
+      "mint-core",
+      "mint-program"
+    ],
+    "verified_by": "admin-authority-spel::tests::fallback_idl_documents_token_authority_surface"
+  }
+}

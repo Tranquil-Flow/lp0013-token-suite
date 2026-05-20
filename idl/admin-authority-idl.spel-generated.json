@@ -1,0 +1,124 @@
+{
+  "accounts": [],
+  "errors": [],
+  "instructions": [
+    {
+      "accounts": [
+        {
+          "init": true,
+          "name": "mint",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": "lp0013:mint:v1"
+              }
+            ]
+          },
+          "signer": false,
+          "writable": true
+        },
+        {
+          "init": false,
+          "name": "payer",
+          "signer": true,
+          "writable": false
+        }
+      ],
+      "args": [
+        {
+          "name": "decimals",
+          "type": "u8"
+        },
+        {
+          "name": "initial_authority",
+          "type": {
+            "defined": "Option"
+          }
+        }
+      ],
+      "name": "create_mint"
+    },
+    {
+      "accounts": [
+        {
+          "init": false,
+          "name": "mint",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": "lp0013:mint:v1"
+              }
+            ]
+          },
+          "signer": false,
+          "writable": true
+        },
+        {
+          "init": true,
+          "name": "recipient_holding",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": "lp0013:holding:v1"
+              }
+            ]
+          },
+          "signer": false,
+          "writable": true
+        },
+        {
+          "init": false,
+          "name": "authority",
+          "signer": true,
+          "writable": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u128"
+        }
+      ],
+      "name": "mint_to"
+    },
+    {
+      "accounts": [
+        {
+          "init": false,
+          "name": "mint",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": "lp0013:mint:v1"
+              }
+            ]
+          },
+          "signer": false,
+          "writable": true
+        },
+        {
+          "init": false,
+          "name": "current_authority",
+          "signer": true,
+          "writable": false
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": {
+            "defined": "Option"
+          }
+        }
+      ],
+      "name": "set_mint_authority"
+    }
+  ],
+  "name": "admin_authority",
+  "types": [],
+  "version": "0.1.0"
+}

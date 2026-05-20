@@ -1,0 +1,15 @@
+/target/
+**/target/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Local working docs that shouldn't ship in repo history
+PR_DRAFT.md
+EXTERNAL_AGENT_HANDOVER.md
+REVIEWER_BRIEF.md
+docs/EXTERNAL_AGENT_HANDOVER.md

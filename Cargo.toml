@@ -1,0 +1,25 @@
+[workspace]
+members = [
+    "admin-authority-core",
+    "admin-authority-spel",
+    "mint-core",
+    "mint-program",
+    "mint-sdk",
+    "mint-cli",
+    "examples/variable-supply",
+    "examples/fixed-supply",
+    "examples/config-pda-gated",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Tranquil-Flow/lp0013-token-suite"
+
+[workspace.dependencies]
+borsh = { version = "1", features = ["derive"] }
+thiserror = "1"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
