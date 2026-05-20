@@ -27,8 +27,8 @@ REQUIRED_FILES = [
     "docs/LEZ_PROOF_LOG.md",
     "docs/BENCHMARKS.md",
     "SUBMISSION.md",
-    "idl/admin-authority-idl.json",
-    "idl/admin-authority-idl.spel-generated.json",
+    "idl/admin-authority.idl.json",
+    "idl/admin-authority.idl.spel-generated.json",
     "spel-spike/admin_authority_guest.rs",
     "spel-spike/generate_idl.rs",
     "spel-spike/live_lifecycle.rs",
@@ -71,7 +71,7 @@ SPEL_STATUS_REQUIRED_PHRASES = [
     "cargo-risczero",
     "v0.2.0-rc1",
     "ed3bbedb4b684645da05455d30a4a0be7cc4dfe0",
-    "admin-authority-idl.spel-generated.json",
+    "admin-authority.idl.spel-generated.json",
     "hand-written",
 ]
 
@@ -79,7 +79,7 @@ LEZ_PROOF_LOG_REQUIRED_PHRASES = [
     "macOS 15.6.1",
     "cargo-risczero",
     "spel -- generate-idl",
-    "admin-authority-idl.spel-generated.json",
+    "admin-authority.idl.spel-generated.json",
     "127.0.0.1:3040",
     "Semantic LEZ rerun",
     # archival structural-surface tx hashes — kept as historical proof
@@ -114,7 +114,7 @@ SUBMISSION_REQUIRED_PHRASES = [
     "LP-0013 Token Authorities",
     "Tranquil-Flow/lp0013-token-suite",
     "offline Rust authority suite: proven",
-    "admin-authority-idl.spel-generated.json",
+    "admin-authority.idl.spel-generated.json",
     "explicit Evi sign-off",
     "RISC0_DEV_MODE=0",
     "No private keys",
@@ -159,9 +159,9 @@ def require_phrases(relative: str, phrases: list[str]) -> None:
 
 def validate_idl() -> None:
     try:
-        idl = json.loads(read_text("idl/admin-authority-idl.json"))
+        idl = json.loads(read_text("idl/admin-authority.idl.json"))
     except json.JSONDecodeError as exc:
-        fail(f"idl/admin-authority-idl.json is invalid JSON: {exc}")
+        fail(f"idl/admin-authority.idl.json is invalid JSON: {exc}")
 
     if idl.get("name") != "admin_authority":
         fail("IDL name must be admin_authority")
@@ -181,7 +181,7 @@ def validate_idl() -> None:
 
 
 def validate_spel_generated_idl() -> None:
-    relative = "idl/admin-authority-idl.spel-generated.json"
+    relative = "idl/admin-authority.idl.spel-generated.json"
     try:
         idl = json.loads(read_text(relative))
     except json.JSONDecodeError as exc:

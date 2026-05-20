@@ -18,7 +18,7 @@ mod tests {
 
     #[test]
     fn fallback_idl_documents_token_authority_surface() {
-        let idl: Value = serde_json::from_str(include_str!("../../idl/admin-authority-idl.json"))
+        let idl: Value = serde_json::from_str(include_str!("../../idl/admin-authority.idl.json"))
             .expect("valid JSON IDL");
 
         assert_eq!(idl["name"], "admin_authority");

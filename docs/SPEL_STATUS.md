@@ -28,7 +28,7 @@ make idl
 # ✅ IDL written to admin_authority_spike-idl.json
 ```
 
-The generated output is committed at `idl/admin-authority-idl.spel-generated.json`. The spike sources are checked in under `spel-spike/` as reproducible evidence.
+The generated output is committed at `idl/admin-authority.idl.spel-generated.json`. The spike sources are checked in under `spel-spike/` as reproducible evidence.
 
 ## Why the hand-written IDL is still the canonical artifact
 
@@ -40,11 +40,11 @@ The SPEL-generated IDL captures the wire-essential surface — instruction names
 - expanded `Option<T>` / nested account-type bodies,
 - per-account comments.
 
-The hand-written fallback at `idl/admin-authority-idl.json` includes all of those, declares its `metadata.generation = "hand-written"`, and is test-guarded by `admin_authority_spel::tests::fallback_idl_documents_token_authority_surface`. The two artifacts agree on the instruction set. The fallback is the documented superset: this SPEL revision leaves `accounts` / `types` empty for this surface and does not emit the richer account bodies, discriminators, execution metadata, or errors.
+The hand-written fallback at `idl/admin-authority.idl.json` includes all of those, declares its `metadata.generation = "hand-written"`, and is test-guarded by `admin_authority_spel::tests::fallback_idl_documents_token_authority_surface`. The two artifacts agree on the instruction set. The fallback is the documented superset: this SPEL revision leaves `accounts` / `types` empty for this surface and does not emit the richer account bodies, discriminators, execution metadata, or errors.
 
 ## Fallback artifact
 
-`idl/admin-authority-idl.json` is the canonical IDL shipped with the submission. It mirrors the proven offline instruction surface:
+`idl/admin-authority.idl.json` is the canonical IDL shipped with the submission. It mirrors the proven offline instruction surface:
 
 - `create_mint`
 - `mint_to`

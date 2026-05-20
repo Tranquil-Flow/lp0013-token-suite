@@ -89,12 +89,12 @@ Same authority model, different key derivation — this proves the library compo
 
 ## Scene 4 — IDL artifacts  (~45s)
 
-[SHOW] Open `idl/admin-authority-idl.json`.
+[SHOW] Open `idl/admin-authority.idl.json`.
 
 [SAY]
 The IDL ships as two files. This one is hand-written and canonical. It includes instruction discriminators, declared errors, and expanded `Option` types — things the current SPEL framework revision doesn't emit yet.
 
-[SHOW] Open `idl/admin-authority-idl.spel-generated.json`.
+[SHOW] Open `idl/admin-authority.idl.spel-generated.json`.
 
 [SAY]
 This second one is real `spel generate-idl` output, run against our guest source on the same LEZ tag and SPEL revision LP-0017 uses. Both files describe the same instruction set. We ship both as evidence.

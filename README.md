@@ -86,7 +86,7 @@ Proven locally:
 
 Proven on host (sequencer at `127.0.0.1:3040` with `RISC0_DEV_MODE=0`):
 
-- real `spel generate-idl` output for the LP-0013 surface, regenerated against the semantic guest and committed at `idl/admin-authority-idl.spel-generated.json`,
+- real `spel generate-idl` output for the LP-0013 surface, regenerated against the semantic guest and committed at `idl/admin-authority.idl.spel-generated.json`,
 - RISC0 guest binary built on macOS arm64 (no recurrence of the LP-0017 cc-rs/ring failure under SPEL `v0.2.0-rc.3`),
 - 2026-05-17 archival spike — structural-surface guest deployed and exercised: deploy txhash `2a5162350724273a09ecfdb32026fc3c7b48b66ae78e441bd602e2d6b72a8965`, block 45491; wire-level lifecycle `fd68e225…` / `07de7c91…` / `ec58ace4…` / `e1ecbb81…`,
 - 2026-05-18 semantic release-candidate rerun — semantic guest (ImageID `58470667…d0b960`) deployed (deploy txhash `b16831c0ee550014ea9297ba47d47b31d0c1b425ff3219b44358189bb9204ab5`, block 49551) and full lifecycle confirmed on chain: `create_mint` (`7d582e7b8dfd166b96f2e3b6c2b52b0febbb42032be198b45c984f1e8b6f9d63`), `mint_to(100)` (`c474cf82465fefed6e8e45ae22c4d6060d05d2a4610f37f04d033dfad5d3c74f`), `set_mint_authority(None)` (`756ee393ed7e4957fd73ec89ffe93dd5fc342535f028edf45f21ca755ee7351c`), post-revoke `mint_to` rejected on chain (`27df9483e9b74d3860ced99cb596739be73f6e7c5d0a34f47798acfb08bc2bff`), with the decoded mint PDA showing `supply=100, current_authority=None, decimals=6`,

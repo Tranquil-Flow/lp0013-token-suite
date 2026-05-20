@@ -65,7 +65,7 @@ cargo-risczero
 Therefore the current committed status is honest:
 
 - offline Rust authority suite proven,
-- fallback IDL committed at `idl/admin-authority-idl.json`,
+- fallback IDL committed at `idl/admin-authority.idl.json`,
 - fallback IDL test-guarded by `admin-authority-spel`,
 - real SPEL/LEZ proof pending host-side execution.
 
@@ -85,13 +85,13 @@ Preferred final command shape:
 ```bash
 spel generate-idl methods/guest/src/bin/admin_authority.rs > /tmp/admin-authority-idl.generated.json
 python3 -m json.tool /tmp/admin-authority-idl.generated.json >/tmp/admin-authority-idl.generated.pretty.json
-diff -u idl/admin-authority-idl.json /tmp/admin-authority-idl.generated.pretty.json || true
+diff -u idl/admin-authority.idl.json /tmp/admin-authority-idl.generated.pretty.json || true
 ```
 
 If generated output is correct, replace the fallback artifact:
 
 ```bash
-cp /tmp/admin-authority-idl.generated.pretty.json idl/admin-authority-idl.json
+cp /tmp/admin-authority-idl.generated.pretty.json idl/admin-authority.idl.json
 ```
 
 Then update:

@@ -134,14 +134,14 @@ section "Hand-written canonical IDL"
 echo "  Three instructions: create_mint, mint_to, set_mint_authority."
 echo "  Includes discriminators, declared errors, expanded Option types."
 echo ""
-show "cat idl/admin-authority-idl.json"
+show "cat idl/admin-authority.idl.json"
 pause "$SCENE_PAUSE"
 
 section "SPEL-generated IDL"
 echo "  Real 'spel generate-idl' output from the same LEZ tag"
 echo "  and SPEL revision used by LP-0017."
 echo ""
-show "cat idl/admin-authority-idl.spel-generated.json"
+show "cat idl/admin-authority.idl.spel-generated.json"
 pause "$SCENE_PAUSE"
 
 # ══════════════════════════════════════════════════════════════════════

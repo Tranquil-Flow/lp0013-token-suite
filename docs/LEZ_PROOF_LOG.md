@@ -76,7 +76,7 @@ make idl
 # ✅ IDL written to admin_authority_spike-idl.json
 ```
 
-The generated output is committed at `idl/admin-authority-idl.spel-generated.json`. It captures the three instructions, their PDA seeds, signer/writable/init modes, and primitive arg types. The current SPEL revision does not yet emit discriminators, the `execution` block, declared errors, or fully expanded `Option<T>` / nested account-type bodies. The hand-written `idl/admin-authority-idl.json` remains the canonical superset; `docs/SPEL_STATUS.md` carries the diff rationale.
+The generated output is committed at `idl/admin-authority.idl.spel-generated.json`. It captures the three instructions, their PDA seeds, signer/writable/init modes, and primitive arg types. The current SPEL revision does not yet emit discriminators, the `execution` block, declared errors, or fully expanded `Option<T>` / nested account-type bodies. The hand-written `idl/admin-authority.idl.json` remains the canonical superset; `docs/SPEL_STATUS.md` carries the diff rationale.
 
 ## LEZ local-sequencer proof
 
@@ -197,7 +197,7 @@ The tx hashes above remain useful archival proof that the SPEL/LEZ wire path wor
 | Proof | Status | Evidence |
 | --- | --- | --- |
 | Offline Rust suite | green | 31 unit + 1 validator passing on host |
-| SPEL IDL generation | green | `idl/admin-authority-idl.spel-generated.json` |
+| SPEL IDL generation | green | `idl/admin-authority.idl.spel-generated.json` |
 | RISC0 guest build (macOS arm64) | green | image id `b59d19dc…594d19`, 462 KB ELF |
 | Local LEZ deploy | green | txhash `2a516235…2a8965`, block 45491 |
 | `create_mint` on-chain (real signing, real risc0-serde encoding) | green | txhash `fd68e225…de79c69`, mint PDA decoded as `MintDefinition` |
@@ -221,7 +221,7 @@ Same as the host environment at the top of this log; sequencer continued running
 cd /tmp/lp0013-spike/admin_authority_spike
 cp <token-suite>/spel-spike/admin_authority_guest.rs methods/guest/src/bin/admin_authority_spike.rs
 make idl
-# cp ./admin_authority_spike-idl.json <token-suite>/idl/admin-authority-idl.spel-generated.json
+# cp ./admin_authority_spike-idl.json <token-suite>/idl/admin-authority.idl.spel-generated.json
 cargo risczero build --manifest-path methods/guest/Cargo.toml
 # Finished `release` profile [optimized] target(s) in 3m 19s (warm cache)
 # ELFs ready at: .../docker/admin_authority_spike.bin

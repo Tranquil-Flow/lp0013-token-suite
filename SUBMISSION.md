@@ -96,13 +96,13 @@ The config-PDA-gated example demonstrates the RFP-001-style gate in the offline 
 Canonical IDL (hand-written, test-guarded superset):
 
 ```text
-idl/admin-authority-idl.json
+idl/admin-authority.idl.json
 ```
 
 Real SPEL-generated IDL (host spike, 2026-05-17):
 
 ```text
-idl/admin-authority-idl.spel-generated.json
+idl/admin-authority.idl.spel-generated.json
 ```
 
 Spike sources for reproducibility:
@@ -176,7 +176,7 @@ Submitted upstream as <https://github.com/logos-co/lambda-prize/pull/57>.
 - [ ] `bash scripts/demo.sh` passes.
 - [ ] `docs/SPEC_COMPLIANCE.md` is current.
 - [ ] `docs/SPEL_STATUS.md` reflects the host-side spike and release-candidate semantic guest status.
-- [ ] `idl/admin-authority-idl.json` is clearly marked as the canonical hand-written superset, with SPEL-generated evidence checked in alongside.
+- [ ] `idl/admin-authority.idl.json` is clearly marked as the canonical hand-written superset, with SPEL-generated evidence checked in alongside.
 - [ ] `RISC0_DEV_MODE=0` proof logs are captured.
 - [x] Demo video link is included — <https://youtu.be/3hQd2G8O-UM>.
 - [ ] No private keys, seeds, credentials, or private chat excerpts are committed.

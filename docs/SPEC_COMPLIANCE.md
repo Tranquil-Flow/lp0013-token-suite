@@ -28,8 +28,8 @@ This document tracks the submission against the LP-0013 success criteria and kee
 - SDK/module for interacting with token program: proven offline.
   - `mint-sdk::TokenClient` wraps create/mint/rotate/revoke/query operations.
 - IDL using SPEL framework: dual-artifact, additive evidence.
-  - `idl/admin-authority-idl.json` is the canonical hand-written IDL for the proven instruction/account surface, declared `metadata.generation = "hand-written"` and test-guarded by `admin-authority-spel`.
-  - `idl/admin-authority-idl.spel-generated.json` is real `spel generate-idl` output regenerated on host (2026-05-17) against the same SPEL revision LP-0017 uses (`ed3bbedb4b684645da05455d30a4a0be7cc4dfe0`, LEZ tag `v0.2.0-rc1`).
+  - `idl/admin-authority.idl.json` is the canonical hand-written IDL for the proven instruction/account surface, declared `metadata.generation = "hand-written"` and test-guarded by `admin-authority-spel`.
+  - `idl/admin-authority.idl.spel-generated.json` is real `spel generate-idl` output regenerated on host (2026-05-17) against the same SPEL revision LP-0017 uses (`ed3bbedb4b684645da05455d30a4a0be7cc4dfe0`, LEZ tag `v0.2.0-rc1`).
   - The two artifacts agree on the instruction set (`create_mint`, `mint_to`, `set_mint_authority`). The canonical hand-written file is the documented superset: the current SPEL-generated artifact does not emit account/type bodies, discriminators, `execution` block, error codes, or expanded type signatures.
   - The spike guest sources are checked in under `spel-spike/` for reproducibility. See `docs/SPEL_STATUS.md` for the diff rationale and `docs/LEZ_PROOF_LOG.md` for the host environment.
 

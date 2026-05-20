@@ -1,6 +1,6 @@
 # LP-0013 SPEL Spike
 
-Real SPEL guest source used to regenerate `idl/admin-authority-idl.spel-generated.json` against the on-host Logos toolchain. This directory is documentation/evidence — it is **not** wired into the workspace build to keep the offline submission free of the macOS arm64 RISC0 guest dependency conflict (see `docs/SPEL_STATUS.md`).
+Real SPEL guest source used to regenerate `idl/admin-authority.idl.spel-generated.json` against the on-host Logos toolchain. This directory is documentation/evidence — it is **not** wired into the workspace build to keep the offline submission free of the macOS arm64 RISC0 guest dependency conflict (see `docs/SPEL_STATUS.md`).
 
 ## Files
 
@@ -31,7 +31,7 @@ make idl
 cat admin_authority_spike-idl.json
 ```
 
-The resulting IDL is what was committed alongside the fallback at `idl/admin-authority-idl.spel-generated.json`. The hand-written `idl/admin-authority-idl.json` is the documented superset (instruction discriminators, execution metadata, named errors, expanded type signatures).
+The resulting IDL is what was committed alongside the fallback at `idl/admin-authority.idl.spel-generated.json`. The hand-written `idl/admin-authority.idl.json` is the documented superset (instruction discriminators, execution metadata, named errors, expanded type signatures).
 
 ## Reproduce — live lifecycle
 

@@ -21,7 +21,7 @@ class SubmissionValidatorTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("submission docs validated", result.stdout)
         self.assertIn("README.md", result.stdout)
-        self.assertIn("idl/admin-authority-idl.json", result.stdout)
+        self.assertIn("idl/admin-authority.idl.json", result.stdout)
         self.assertIn(".github/workflows/ci.yml", result.stdout)
 
     def test_docs_do_not_retain_pre_spike_pending_language(self):
@@ -57,7 +57,7 @@ class SubmissionValidatorTests(unittest.TestCase):
 
     def test_idl_claims_match_generated_artifact_limitations(self):
         spec = (ROOT / "docs" / "SPEC_COMPLIANCE.md").read_text()
-        generated_idl = (ROOT / "idl" / "admin-authority-idl.spel-generated.json").read_text()
+        generated_idl = (ROOT / "idl" / "admin-authority.idl.spel-generated.json").read_text()
 
         self.assertIn('"accounts": []', generated_idl)
         self.assertNotIn("The two artifacts agree on the instruction set (`create_mint`, `mint_to`, `set_mint_authority`) and account types", spec)

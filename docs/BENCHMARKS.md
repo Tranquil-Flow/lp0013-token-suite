@@ -183,5 +183,5 @@ The reproducible commands and intermediate state are checked in:
 - `spel-spike/admin_authority_guest.rs` — guest module source
 - `spel-spike/generate_idl.rs` — IDL driver
 - `spel-spike/README.md` — step-by-step reproduction
-- `idl/admin-authority-idl.spel-generated.json` — generated IDL artifact
+- `idl/admin-authority.idl.spel-generated.json` — generated IDL artifact
 - `docs/LEZ_PROOF_LOG.md` — full host-side log
