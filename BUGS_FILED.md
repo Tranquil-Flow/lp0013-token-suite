@@ -4,9 +4,9 @@ Per LP-0013 spec submission requirements, this file documents upstream Logos iss
 
 ## Filed upstream
 
-| # | Repo | Issue | URL |
-|---|---|---|---|
-| 1 | logos-blockchain/logos-blockchain-circuits | #33 — README missing install path docs (`~/.logos-blockchain-circuits`) | https://github.com/logos-blockchain/logos-blockchain-circuits/issues/33 |
+| # | Repo | Issue | Status | URL |
+|---|---|---|---|---|
+| 1 | logos-blockchain/logos-blockchain-circuits | #33 — README missing install path docs (`~/.logos-blockchain-circuits`) | Closed by maintainer 2026-05-27 — concern belongs against `logos-blockchain-node`; team is migrating to library-based circuits which addresses the panic | https://github.com/logos-blockchain/logos-blockchain-circuits/issues/33 |
 
 ## Worked around
 
