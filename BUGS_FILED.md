@@ -6,9 +6,7 @@ Per LP-0013 spec submission requirements, this file documents upstream Logos iss
 
 | # | Repo | Issue | URL |
 |---|---|---|---|
-| 1 | logos-co/spel | #224 — spel-framework cannot be a guest dep on macOS arm64 | https://github.com/logos-co/spel/issues/224 |
-| 2 | logos-co/spel | #225 — Claim::Authorized vs Claim::Pda(seed) undocumented | https://github.com/logos-co/spel/issues/225 |
-| 3 | logos-blockchain/logos-execution-zone | #501 — No public LEZ sequencer RPC for program deployment | https://github.com/logos-blockchain/logos-execution-zone/issues/501 |
+| 1 | logos-blockchain/logos-blockchain-circuits | #33 — README missing install path docs (`~/.logos-blockchain-circuits`) | https://github.com/logos-blockchain/logos-blockchain-circuits/issues/33 |
 
 ## Worked around
 
