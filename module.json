@@ -1,0 +1,29 @@
+{
+  "name": "lp0013-token-authorities",
+  "version": "0.1.0",
+  "description": "LP-0013: Token Program Mint Authority — admin-authority lifecycle with RISC0_DEV_MODE=0 LEZ deployment",
+  "license": "MIT OR Apache-2.0",
+  "repository": "https://github.com/Tranquil-Flow/lp0013-token-suite",
+  "prize": "LP-0013",
+  "prize_status": "Open",
+  "prize_amount": "$600",
+  "crates": [
+    "admin-authority-core",
+    "admin-authority-spel",
+    "mint-core",
+    "mint-program",
+    "mint-sdk",
+    "mint-cli"
+  ],
+  "instructions": [
+    "create_mint",
+    "mint_to",
+    "set_mint_authority",
+    "revoke_mint_authority"
+  ],
+  "spel_idl": "idl/admin-authority.idl.json",
+  "rfp_001_compliance": true,
+  "ci": ".github/workflows/ci.yml",
+  "demo_video_url": "https://youtu.be/3hQd2G8O-UM",
+  "submission_pr": "https://github.com/logos-co/lambda-prize/pull/57"
+}
