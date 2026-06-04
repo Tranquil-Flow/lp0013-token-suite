@@ -1,6 +1,212 @@
 # LEZ / SPEL Proof Log
 
+> **✅ RESOLVED (2026-06-04) — corrected guest deployed + verified on the public testnet.** The init-only holding PDA was split into `create_holding` + mutable `mint_to`. The corrected four-instruction guest (ImageID/ProgramId `32335764…b0a9ce`) was re-deployed to `testnet.lez.logos.co` under `RISC0_DEV_MODE=0` and the full lifecycle re-captured: **two accumulating mints (60+40 → 100) prove variable supply on chain**, and the post-revoke mint is **rejected by the authority guard** (the holding already exists, so it is `require_authority`, not an init side effect). See the **2026-06-04 corrected** section immediately below; it supersedes the **2026-06-03 pre-fix run** (single-`init` holding, one mint), which is retained as a historical record. Authoritative state → [`../RESUBMISSION_STATUS.md`](../RESUBMISSION_STATUS.md).
+
 Host-side proof attempts for LP-0013, capturing exact commands, environment, and outcomes. The intent is honest evaluator-facing evidence — successes are recorded with hashes/timing, failures are recorded with the exact error so the submission stays trustworthy.
+
+The public-testnet deploy + lifecycle of **2026-06-04** (next section) is the **load-bearing evidence**: it ran the **corrected four-instruction guest** on the shared, no-auth `testnet.lez.logos.co` network under `RISC0_DEV_MODE=0`, with two accumulating mints and a guard-rejected post-revoke mint. The **2026-06-03** run below it is the superseded **pre-fix** run (single-`init` holding, one mint), retained as a historical record. The earlier local-sequencer sessions (2026-05-17 structural, 2026-05-18 semantic, further down this log) are historical corroboration of the wire path and semantics — and the 2026-05-18 localnet run additionally captured the exact guest-panic string (`Program error 2008: authority has been revoked`) that the testnet's hidden sequencer logs cannot surface.
+
+## Public testnet deploy + lifecycle (2026-06-04) — CORRECTED GUEST (load-bearing)
+
+The **corrected** LP-0013 guest (init-only holding split into `create_holding` + mutable `mint_to`) was deployed and exercised on the **public LEZ testnet**. This is the evidence that proves the fix; it supersedes the 2026-06-03 pre-fix run below.
+
+```text
+sequencer RPC:  https://testnet.lez.logos.co/   (public, no-auth, JSON-RPC over HTTPS POST)
+explorer:       https://explorer.testnet.lez.logos.co/
+network:        real consensus, RISC0_DEV_MODE=0 (sequencer-side proving for public transactions)
+date:           2026-06-04
+```
+
+### Guest binary (corrected, rc3 / testnet-matching)
+
+Built with the same rc3 pins as the 2026-06-03 run (`spel` rev `31e52c52`, `nssa*` tag `v0.2.0-rc3`, commit `cf3639d8`); the only change is the corrected guest source (four instructions). The reproducible `cargo risczero build` (10m45s) reported:
+
+```text
+file:    onchain-program/methods/guest/target/riscv32im-risc0-zkvm-elf/docker/admin_authority_spike.bin
+size:    480,748 bytes
+ImageID: 32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce
+```
+
+In LEZ a program is content-addressed, so the **ProgramId equals the ImageID** — verified three ways: the `cargo risczero build` output above, the driver's `Program::new(elf).id()`, and the on-chain `program_owner` of the mint PDA (base58 `4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF`, which decodes to the same 32 bytes). The ImageID differs from the 2026-06-03 run by exactly the source fix — same dependency graph (`cf3639d8`), different guest.
+
+### Lifecycle driver output (against `testnet.lez.logos.co`)
+
+`onchain-program/examples/src/bin/live_lifecycle.rs`, run from a faucet-funded signer (`B6Sa77taeQgQ3FXHP88wjs15sJw3EyfcRjnSAZKnYchb`), against the public testnet:
+
+```text
+== LP-0013 live lifecycle ==
+program_id  = [1683436338, 1171096549, 85608, 1453548490, 1294402122, 2779147946, 3606730999, 3467227249]
+mint_pda    = HtCYkKN5K3dUVnPhJ4tCNpvDrnEcLZKgh8i4PkUjigfu
+authority   = B6Sa77taeQgQ3FXHP88wjs15sJw3EyfcRjnSAZKnYchb
+recipient   = 4yswbZaRR1HQt4a5HS4uN7nLvAwL1txHTMSXKo1WZH2S
+
+[0] deploy_program           confirmed tx=5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0
+[1] create_mint              confirmed tx=7d1dcb04b5f339b33f04a120b7334cf9802720d4a917e600becd62476e44da74
+[2] create_holding           confirmed tx=520d080b833c7e4038a1aa214bba43a3fc97328e8f379a093b74ca3e32be5893
+[3] mint_to(60)              confirmed tx=8c865d0184f55ce5a881e24c8c125cd3729c5f90a4b83d0484c8d1610f743f61
+[4] mint_to(40)              confirmed tx=c63168b7f615221ab2425b2ba003d32183f4df2e482eb4203e4e216675993d21
+[5] set_mint_authority(None) confirmed tx=8c4b08b5c750c57d0dbb4e9f43c32b7c0f2627ce5508da85408e3aaf01f5a331
+[6] mint_to(post-revoke)     rejected as expected (no inclusion) tx=6e92e605e932756332c9721a4e4754f155780069490b256fe67b35f374a972d1
+[7] mint state    = OnChainMintDefinition { authority: { authority_type: 0, current_authority: None }, supply: 100, decimals: 6 }
+[8] holding state = OnChainTokenHolding { owner: [...], balance: 100 }
+```
+
+Two mints of 60 and 40 into the **same** holding both confirmed and accumulated to `supply=100` / `balance=100` — **variable-supply minting works on chain**, which the pre-fix single-`init` holding could not do (its second mint would fail). The post-revoke `mint_to(7)` targets the **already-existing** holding (`mut`, not `init`), so nothing rejects it before the guest body runs: the rejection is `require_authority` (error 2008), and the readback shows `supply` stayed 100 (not 107) with `current_authority = None`.
+
+### Independent live re-verification (read-only, any reviewer)
+
+Reproducible with `bash scripts/demo-testnet-live.sh verify` (needs only the `wallet` binary — no build, faucet, or keys):
+
+| step | tx hash | live chain-info verdict |
+| --- | --- | --- |
+| deploy_program | `5b39deec…85cb4ce0` | `Some(ProgramDeployment)` |
+| create_mint | `7d1dcb04…6e44da74` | `Some(Public)` |
+| create_holding | `520d080b…32be5893` | `Some(Public)` |
+| mint_to(60) | `8c865d01…0f743f61` | `Some(Public)` |
+| mint_to(40) | `c63168b7…5993d21` | `Some(Public)` |
+| set_mint_authority(None) | `8c4b08b5…01f5a331` | `Some(Public)` |
+| mint_to (post-revoke) | `6e92e605…374a972d1` | `Transaction is None` (never included) |
+
+Mint PDA (`Public/HtCYkKN5K3dUVnPhJ4tCNpvDrnEcLZKgh8i4PkUjigfu`) raw account data:
+
+```json
+{"balance":0,"program_owner":"4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF",
+ "data":"00006400000000000000000000000000000006","nonce":0}
+```
+
+Decodes (borsh, little-endian): `authority_type=0`, `Option tag=None` (authority revoked, persisted), `supply=100` (the post-revoke +7 never landed — would be 107), `decimals=6`.
+
+### What is proved on the public testnet (corrected guest)
+
+| Proof | Status | Evidence |
+| --- | --- | --- |
+| Corrected program deployed on public testnet | green | deploy tx `5b39deec…` → `Some(ProgramDeployment)`; ProgramId/ImageID `32335764…b0a9ce` |
+| `create_mint` + `create_holding` confirmed | green | `7d1dcb04…`, `520d080b…` → `Some(Public)` |
+| **variable supply on chain** (two accumulating mints) | green | `8c865d01…`(60) + `c63168b7…`(40) → `Some(Public)`; PDA `supply=100`, holding `balance=100` |
+| `set_mint_authority(None)` confirmed | green | `8c4b08b5…` → `Some(Public)`; `current_authority=None` persisted |
+| **post-revoke mint rejected by the authority guard** (not by init) | green | `6e92e605…` never included; holding pre-exists (`mut`), so the rejection is `require_authority` (2008); PDA `supply` stayed 100 |
+| revocation invariant on-chain | green | live PDA readback decodes `authority=None, supply=100, decimals=6` |
+
+**Why the rejection is genuinely the guard, not an init side effect (the reviewer's point #5).** In the pre-fix guest the holding was `#[account(init)]` on every mint, so a post-revoke mint was rejected by `AccountAlreadyInitialized` *before* `require_authority` ran — the guard was never genuinely exercised, and the single-mint lifecycle masked it. In the corrected guest the holding is created once (`create_holding`) and is then `mut`; the two earlier mints already wrote to it, so the post-revoke mint reaches the guest body and is rejected by `require_authority` (error 2008). The exact 2008 panic string is hidden by the testnet's sequencer logs, but it was captured directly on localnet (see the 2026-05-18 rerun's independent re-verification below, re-confirmable via `scripts/demo-localnet.sh`); on testnet the *state-level invariant* (`supply=100` not 107, `authority=None`) proves the post-revoke mint could not have succeeded.
+
+## Public testnet deploy + lifecycle (2026-06-03) — SUPERSEDED (pre-fix guest)
+
+The full LP-0013 authority lifecycle was deployed and exercised on the **public LEZ testnet**, not a local sequencer. Endpoints:
+
+```text
+sequencer RPC:  https://testnet.lez.logos.co/   (public, no-auth, JSON-RPC over HTTPS POST)
+explorer:       https://explorer.testnet.lez.logos.co/
+network:        real consensus, RISC0_DEV_MODE=0 (sequencer-side proving for public transactions)
+date:           2026-06-03
+```
+
+### Version-pin landmine (why this guest differs from the 2026-05 localnet binary)
+
+The testnet runs LEZ **`v0.1.2` ≡ `v0.2.0-rc3`** (both tags resolve to commit `cf3639d8`). The 2026-05 localnet guest was built against **`v0.2.0-rc1`** (`35d8df0d`), whose `nssa/core/src/program.rs` differs by ~300 lines; that binary will not execute on the testnet. Two traps were defused before spending compile time:
+
+1. `spel init`'s `--lez-tag` / `--spel-rev` flags do **not** propagate into the generated `methods/guest/Cargo.toml` or `examples/Cargo.toml` — the template hardcodes `nssa_core tag=v0.2.0-rc1` + `spel-framework tag=v0.2.0-rc.3`. Every `Cargo.toml` was hand-edited.
+2. spel's **`v0.2.0-rc.3` tag pins `nssa_core` back to rc1 internally**. Only the spel branch `chore/bump-lez-to-v0.2.0-rc3` (commit `31e52c52`) pins rc3. So `spel-framework`/`spel` are pinned to `rev = "31e52c529baba2205eeeacf5bb52647e84236b94"` and every `nssa`/`nssa_core`/`common`/`wallet`/`sequencer_service_rpc` to `tag = "v0.2.0-rc3"`.
+
+Verified before building: `cargo generate-lockfile` then grep the lock — `nssa_core` resolves to `cf3639d8`, zero `35d8df0d`. (`PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1` is required on every cargo invocation: system Python 3.14 exceeds PyO3's max 3.13.)
+
+### Guest binary (rc3 / testnet-matching)
+
+```text
+file:    methods/guest/target/riscv32im-risc0-zkvm-elf/docker/admin_authority_spike.bin
+size:    478,000 bytes
+ImageID: 59e15341b10dfacf6bfeb8436f587e18fb4bf714fc042c79aba9f8878fb0ae2c
+ProgramId (hex):
+  4153e159,cffa0db1,43b8fe6b,187e586f,14f74bfb,792c04fc,87f8a9ab,2caeb08f
+```
+
+Same semantic guest source as the 2026-05-18 localnet run; the differing ImageID is purely the rc3 dependency graph (`cf3639d8`) versus rc1 (`35d8df0d`).
+
+### Deploy + execution model and gas finding
+
+`wallet deploy-program` is fire-and-forget — the CLI discards the response, so it cannot surface a deploy tx hash. The lifecycle driver replicates the same transaction with a typed call so the hash can be captured and polled:
+
+```rust
+let deploy_tx = nssa::ProgramDeploymentTransaction::new(
+    nssa::program_deployment_transaction::Message::new(bytecode));
+let hash = sequencer_client
+    .send_transaction(NSSATransaction::ProgramDeployment(deploy_tx)).await?;
+// then poll get_transaction(hash) until inclusion
+```
+
+Findings, both verified against on-chain balances/nonces:
+
+- **Deploy charges no gas.** `ProgramDeploymentTransaction` has no signer and `affected_public_account_ids() == []`.
+- **Public-transaction execution charges no gas.** The signer's balance was unchanged (150 → 150) across create_mint + mint_to + set_mint_authority; only its `nonce` incremented (1 → 4 for the three included txs). The signer must be an *initialized* account (faucet-funded so it exists on-chain) holding a wallet signing key; balance is irrelevant to execution.
+- **Proving is sequencer-side** for public (PDA / public-state) transactions, so the client stays light — no local proving, no heavy compute needed for this lifecycle. (Private executions would prove client-side; LP-0013 is entirely public-state.)
+
+### Lifecycle driver output (against `testnet.lez.logos.co`)
+
+The driver (`spel-spike/live_lifecycle.rs`, run from the rc3 build tree) signs and submits a strongly-typed instruction enum through `nssa`, bypassing the IDL-driven CLI's `Option<T>` arg gap (see SPEL_STATUS). Authority/poll windows are env-configurable so the same driver runs against localnet or the slower-to-include testnet.
+
+```text
+== LP-0013 live lifecycle ==
+program_id  = [1096016217, 3489271217, 1136197227, 410933359, 351751163, 2032927996, 2281220523, 749645967]
+mint_pda    = FrbpfbUb5YpfeKEhsbMzKB5CAv9nbnCQDXbZrDJoQFV7
+authority   = 8WWzugkceudpRHQdrB74CL3YjBYEqZHRFAR52itgkyBw
+recipient   = 5Y3b9S6WL91ivBVU8qnVb1hfHuvey7rEL9FB69ZnuZ8m
+
+[0] deploy_program           confirmed tx=07561014a617dc18c3a420db01c9f752755053eb58f44d8db98871646cb968ba
+[1] create_mint              confirmed tx=17d90ea633db426a863efc697239aa158293c20822ff07839a2a0b6f2eeb37d2
+[2] mint_to(100)             confirmed tx=be393bcf82e489bc5a940904ed0e38ea861b61939f43529132ca4c701f29bbd8
+[3] set_mint_authority(None) confirmed tx=0540648f9f5099296340bcf65d0ac1a4cf89ff226eca7abb27dcdcb0b29f5784
+[4] mint_to(post-revoke)     rejected as expected (no inclusion) tx=312ea9f120602f9aa2d574d43fefa73ae25d74e1bd228b9f65317fef8fef4798
+[5] mint state = OnChainMintDefinition { authority: OnChainAuthorityInfo { authority_type: 0,
+    current_authority: None }, supply: 100, decimals: 6 }
+```
+
+### Independent live re-verification (2026-06-03, sequencer block 37513)
+
+The hashes above were re-queried directly from the public sequencer — pure chain reads, no local state, reproducible by any reviewer who points a wallet at `https://testnet.lez.logos.co/`:
+
+```bash
+export NSSA_WALLET_HOME_DIR=<any wallet home with sequencer_addr=https://testnet.lez.logos.co/>
+export PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
+wallet chain-info transaction --hash <hash>      # per tx
+wallet account get --account-id Public/FrbpfbUb5YpfeKEhsbMzKB5CAv9nbnCQDXbZrDJoQFV7   # mint PDA
+```
+
+| step | tx hash | live chain-info verdict |
+| --- | --- | --- |
+| deploy_program | `07561014…cb968ba` | `Some(ProgramDeployment)` |
+| create_mint | `17d90ea6…eeb37d2` | `Some(Public)` |
+| mint_to(100) | `be393bcf…f29bbd8` | `Some(Public)` |
+| set_mint_authority(None) | `0540648f…b29f5784` | `Some(Public)` |
+| mint_to (post-revoke) | `312ea9f1…8fef4798` | `Transaction is None` (never included) |
+
+Mint PDA (`Public/FrbpfbUb5YpfeKEhsbMzKB5CAv9nbnCQDXbZrDJoQFV7`) raw account data:
+
+```json
+{"balance":0,"program_owner":"73rZhrXT2AkmKGMbkGxoisHnabLc2pxNcvNZr8ZvRr9h",
+ "data":"00006400000000000000000000000000000006","nonce":0}
+```
+
+The 19-byte `data` decodes (borsh, little-endian) exactly as the driver reported:
+
+```text
+byte 0      = 0x00   authority_type        = 0
+byte 1      = 0x00   Option tag            = None        ← authority revoked, persisted
+bytes 2..18 = 0x64.. supply (u128 LE)      = 100         ← mint_to(100) landed; post-revoke +7 did NOT (would be 107)
+byte 18     = 0x06   decimals              = 6
+```
+
+### What is proved on the public testnet
+
+| Proof | Status | Evidence |
+| --- | --- | --- |
+| Program deployed on public testnet | green | deploy tx `07561014…cb968ba` → `Some(ProgramDeployment)`; ProgramId `4153e159…2caeb08f` |
+| `create_mint` confirmed | green | tx `17d90ea6…eeb37d2` → `Some(Public)` |
+| `mint_to(100)` confirmed | green | tx `be393bcf…f29bbd8` → `Some(Public)`; PDA supply = 100 |
+| `set_mint_authority(None)` confirmed | green | tx `0540648f…b29f5784` → `Some(Public)`; PDA `current_authority = None` persisted |
+| post-revoke `mint_to` rejected | green | tx `312ea9f1…8fef4798` never included (`chain-info` → None); PDA supply stayed 100 (not 107) |
+| revocation invariant on-chain | green | live PDA readback decodes `authority=None, supply=100, decimals=6` |
+| deploy + public-exec gas cost | none | signer balance 150 → 150; only nonce 1 → 4 |
+
+**Honesty note on the post-revoke rejection.** On the 2026-05-18 *localnet* run the host had sequencer-log access and could quote the exact guest panic (`Program error 2008: authority has been revoked`). The public testnet does not expose its sequencer logs, so on testnet the rejection is established two ways instead: (a) the transaction is never included (`chain-info` returns None), and (b) the live mint-PDA readback shows `supply = 100` (not 107) with `current_authority = None`, i.e. a mint after revocation could not have succeeded. The semantic guard's *exact error string* is corroborated by the localnet capture below and by the offline `mint-core` tests; on testnet the *state-level invariant* is what is directly proven.
 
 ## Host environment
 
@@ -38,7 +244,7 @@ bash scripts/demo.sh
 python3 -m unittest discover -s tests -p 'test_validate_submission_docs.py'
 ```
 
-Outcome: all three pass. `cargo test --workspace` reports 31 Rust tests passing (`admin-authority-core` 6, `admin-authority-spel` 2, `mint-core` 7, `mint-program` 6, `mint-sdk` 3, `mint-cli` 2, `examples/variable-supply` 1, `examples/fixed-supply` 1, `examples/config-pda-gated` 1, doc-tests 0+0+0+0+0). `scripts/demo.sh` prints the full authority lifecycle for all three runnable examples. `python3 -m unittest` reports `Ran 1 test in 0.062s OK`.
+Outcome: all three pass. `cargo test --workspace` reports 30 Rust tests passing (`admin-authority-core` 6, `admin-authority-spel` 2, `mint-core` 7, `mint-program` 7 — including the repeated-mint / post-revoke-guard contract test — `mint-sdk` 3, `mint-cli` 2, `examples/variable-supply` 1, `examples/fixed-supply` 1, `examples/config-pda-gated` 1, doc-tests 0). `scripts/demo.sh` prints the full authority lifecycle for all three runnable examples. The submission-doc validator self-tests (`tests/test_validate_submission_docs.py`) report `8 passed`.
 
 ## SPEL IDL regeneration
 
@@ -76,9 +282,11 @@ make idl
 # ✅ IDL written to admin_authority_spike-idl.json
 ```
 
-The generated output is committed at `idl/admin-authority.idl.spel-generated.json`. It captures the three instructions, their PDA seeds, signer/writable/init modes, and primitive arg types. The current SPEL revision does not yet emit discriminators, the `execution` block, declared errors, or fully expanded `Option<T>` / nested account-type bodies. The hand-written `idl/admin-authority.idl.json` remains the canonical superset; `docs/SPEL_STATUS.md` carries the diff rationale.
+The generated output is committed at `idl/admin-authority.idl.spel-generated.json` (regenerated for the corrected four-instruction surface). It captures the four instructions, their PDA seeds, signer/writable/init modes, primitive arg types, and the full account bodies. The generator does not emit discriminators (LEZ dispatches by enum-variant index), the `execution` block, declared errors, or the instruction-arg `Option<T>` inner type. The spel-generated IDL is authoritative for the on-chain surface; the hand-written `idl/admin-authority.idl.json` is a design reference documenting the omitted pieces. `docs/SPEL_STATUS.md` carries the diff rationale.
 
 ## LEZ local-sequencer proof
+
+> **Status: historical corroboration.** Both these localnet runs and the 2026-06-03 public-testnet run above predate the correctness fix (single-use `init` holding → `create_holding` + mutable `mint_to`); the load-bearing on-chain evidence is the **2026-06-04 corrected-guest testnet run** at the top of this file. See the top banner and `../RESUBMISSION_STATUS.md`. The sections below ran against a local sequencer (`127.0.0.1:3040`) and honestly document that the SPEL/LEZ wire path and the authority semantics work end-to-end — the localnet run additionally captured the exact guest-panic string for the post-revoke rejection (`Program error 2008: authority has been revoked`), which the testnet's hidden sequencer logs cannot surface. They are retained for transparency / corroboration.
 
 The host's LEZ sequencer is up under the LP-0017 scaffold session:
 
@@ -196,7 +404,7 @@ The tx hashes above remain useful archival proof that the SPEL/LEZ wire path wor
 
 | Proof | Status | Evidence |
 | --- | --- | --- |
-| Offline Rust suite | green | 31 unit + 1 validator passing on host |
+| Offline Rust suite | green | 30 unit + validator (8 self-tests) passing on host |
 | SPEL IDL generation | green | `idl/admin-authority.idl.spel-generated.json` |
 | RISC0 guest build (macOS arm64) | green | image id `b59d19dc…594d19`, 462 KB ELF |
 | Local LEZ deploy | green | txhash `2a516235…2a8965`, block 45491 |

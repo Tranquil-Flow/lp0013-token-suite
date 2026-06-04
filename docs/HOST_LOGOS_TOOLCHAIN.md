@@ -1,5 +1,7 @@
 # Host Logos Toolchain Handoff
 
+> **⚠️ Historical handoff note (overtaken by events, 2026-06-04).** Since this was written: the host Logos toolchain (`spel`, `cargo-risczero`) was confirmed available and used; the program was deployed to the **public** LEZ testnet (`testnet.lez.logos.co`, not a local-only devnet); a correctness fix then superseded that first run, and the **corrected four-instruction guest was re-deployed and verified on the public testnet (2026-06-04; ProgramId/ImageID `32335764…b0a9ce`)**; and the SPEL IDL was regenerated for the corrected surface (committed at `idl/admin-authority.idl.spel-generated.json`). The procedural notes below are retained for reference only. Authoritative status → [`../RESUBMISSION_STATUS.md`](../RESUBMISSION_STATUS.md).
+
 This sandbox does not have the Logos execution toolchain installed, but LP-0017 was previously built on this computer outside the sandbox. The real `spel` / `lgs` / `cargo-risczero` proof should therefore be attempted from the host environment that was used for LP-0017, likely the Claude Code macOS shell rather than this container.
 
 ## Goal
@@ -78,21 +80,21 @@ bash scripts/check-prereqs.sh
 bash scripts/demo.sh
 ```
 
-### 2. SPEL IDL regeneration attempt
+### 2. SPEL IDL regeneration
 
-Preferred final command shape:
-
-```bash
-spel generate-idl methods/guest/src/bin/admin_authority.rs > /tmp/admin-authority-idl.generated.json
-python3 -m json.tool /tmp/admin-authority-idl.generated.json >/tmp/admin-authority-idl.generated.pretty.json
-diff -u idl/admin-authority.idl.json /tmp/admin-authority-idl.generated.pretty.json || true
-```
-
-If generated output is correct, replace the fallback artifact:
+`spel generate-idl` AST-parses the guest (no risc0 build needed), so the IDL can
+be regenerated anywhere `spel` is on PATH. Regenerate the **spel-generated**
+artifact — never overwrite the hand-written design reference:
 
 ```bash
-cp /tmp/admin-authority-idl.generated.pretty.json idl/admin-authority.idl.json
+spel -- generate-idl onchain-program/methods/guest/src/bin/admin_authority_spike.rs \
+  | python3 -m json.tool > idl/admin-authority.idl.spel-generated.json
 ```
+
+This has already been done for the corrected four-instruction surface (`create_mint`,
+`create_holding`, `mint_to`, `set_mint_authority`). The hand-written
+`idl/admin-authority.idl.json` is maintained separately as a design reference and is
+**not** replaced by generated output.
 
 Then update:
 

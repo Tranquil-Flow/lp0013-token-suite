@@ -54,6 +54,46 @@
       ]
     },
     {
+      "name": "create_holding",
+      "variant": "CreateHolding",
+      "discriminator": [11, 70, 162, 39, 144, 22, 90, 8],
+      "execution": {
+        "public": true,
+        "private_owned": false
+      },
+      "accounts": [
+        {
+          "name": "holding",
+          "writable": true,
+          "signer": false,
+          "init": true,
+          "visibility": ["public"],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "literal",
+                "value": "lp0013:holding:v1"
+              },
+              {
+                "kind": "account",
+                "value": "holding"
+              }
+            ]
+          },
+          "comment": "TokenHolding account claimed once (init). Separating the claim from minting is what lets mint_to (mutable holding) accumulate balance across repeated mints; a single init-on-mint holding could only be written once."
+        },
+        {
+          "name": "payer",
+          "writable": false,
+          "signer": true,
+          "init": false,
+          "visibility": ["public"],
+          "comment": "Pays for and signs the one-time holding account creation."
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "mint_to",
       "variant": "MintTo",
       "discriminator": [37, 98, 54, 201, 83, 12, 7, 241],
@@ -308,8 +348,12 @@
   "metadata": {
     "spec_version": "lssa-idl/0.1.0",
     "generation": "hand-written",
-    "tooling_status": "spel-unavailable-in-this-container",
-    "generation_reason": "The local container has rustc/cargo but no spel, lgs, or cargo-risczero binaries. This artifact preserves the intended SPEL/IDL surface until the real Logos toolchain can regenerate it from #[lez_program] annotations.",
+    "tooling_status": "spel-available-generated-idl-shipped-alongside",
+    "generation_reason": "Hand-authored design reference. The real `spel generate-idl` output for the deployed guest is shipped alongside at idl/admin-authority.idl.spel-generated.json (verified byte-identical across the rc1 `ed3bbedb` and rc3 `31e52c52` spel revisions). This hand-written file additionally documents instruction execution semantics, the declared TokenError set, and expanded Option types that the spel generator does not emit.",
+    "caveats": [
+      "The `discriminator` arrays are ILLUSTRATIVE (Anchor-style 8-byte tags). The LEZ runtime dispatches instructions by enum-variant INDEX (create_mint=0, create_holding=1, mint_to=2, set_mint_authority=3) — as the spel-generated IDL (which omits discriminators) and the live_lifecycle driver (serde variant index) both reflect.",
+      "The instruction `args` here model the offline mint-program flattened call surface (mint id / signer / owner passed as data). The authoritative ON-CHAIN account/arg split is the spel-generated IDL: e.g. create_mint takes scalar args (decimals, initial_authority) with `mint` and `payer` as accounts, not data args. create_holding is the exception modeled directly on the on-chain guest (init holding + signer payer, no scalar args)."
+    ],
     "source_crates": [
       "admin-authority-core",
       "mint-core",

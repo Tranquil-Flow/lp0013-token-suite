@@ -25,7 +25,7 @@ mod tests {
         assert_eq!(idl["metadata"]["generation"], "hand-written");
         assert_eq!(
             idl["metadata"]["tooling_status"],
-            "spel-unavailable-in-this-container"
+            "spel-available-generated-idl-shipped-alongside"
         );
 
         let instructions = idl["instructions"].as_array().expect("instructions array");
@@ -35,7 +35,12 @@ mod tests {
             .collect();
         assert_eq!(
             instruction_names,
-            vec!["create_mint", "mint_to", "set_mint_authority"]
+            vec![
+                "create_mint",
+                "create_holding",
+                "mint_to",
+                "set_mint_authority"
+            ]
         );
 
         let accounts = idl["accounts"].as_array().expect("accounts array");

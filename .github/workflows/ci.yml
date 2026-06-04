@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   rust:
@@ -35,3 +36,35 @@ jobs:
 
       - name: Offline demo
         run: bash scripts/demo.sh
+
+      - name: Validate submission docs
+        run: python3 scripts/validate-submission-docs.py
+
+      - name: Submission validator self-tests
+        run: python3 tests/test_validate_submission_docs.py
+
+  testnet-verify:
+    name: On-chain verification (manual)
+    # Hosted CI cannot build the RISC0 guest or run a sequencer/faucet, so the
+    # on-chain path is NOT part of the per-push gate. This job is manual-only
+    # (workflow_dispatch): it builds the LEZ `wallet` and re-verifies the public
+    # testnet evidence read-only. NOTE: the hashes in scripts/demo-testnet-live.sh
+    # are from the pre-fix guest and will be refreshed at the maintainer-authorized
+    # re-deploy of the corrected guest (see RESUBMISSION_STATUS.md); run this after
+    # that refresh for it to evidence the corrected behavior.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build LEZ wallet (tag v0.1.2 — the public testnet version)
+        run: |
+          git clone --depth 1 --branch v0.1.2 https://github.com/logos-blockchain/logos-execution-zone /tmp/lez
+          PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 cargo install --path /tmp/lez/wallet --force
+
+      - name: Verify public-testnet evidence (read-only)
+        run: bash scripts/demo-testnet-live.sh verify

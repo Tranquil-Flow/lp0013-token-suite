@@ -56,13 +56,35 @@ class SubmissionValidatorTests(unittest.TestCase):
                 self.assertNotIn(phrase, text, f"{relative} still contains stale phrase: {phrase}")
 
     def test_idl_claims_match_generated_artifact_limitations(self):
-        spec = (ROOT / "docs" / "SPEC_COMPLIANCE.md").read_text()
-        generated_idl = (ROOT / "idl" / "admin-authority.idl.spel-generated.json").read_text()
+        import json
 
-        self.assertIn('"accounts": []', generated_idl)
-        self.assertNotIn("The two artifacts agree on the instruction set (`create_mint`, `mint_to`, `set_mint_authority`) and account types", spec)
-        self.assertIn("The two artifacts agree on the instruction set", spec)
-        self.assertIn("the current SPEL-generated artifact does not emit account/type bodies", spec)
+        spec = (ROOT / "docs" / "SPEC_COMPLIANCE.md").read_text()
+        rc1_idl_text = (ROOT / "idl" / "admin-authority.idl.spel-generated.json").read_text()
+        rc3_idl_text = (
+            ROOT / "idl" / "admin-authority.idl.spel-generated.rc3-testnet.json"
+        ).read_text()
+
+        # Under the corrected guest (which annotates #[account_type]) the two
+        # pin-labeled generations coincide byte-for-byte — a cross-revision
+        # stability check, not a richer-vs-poorer asymmetry.
+        self.assertEqual(rc1_idl_text, rc3_idl_text)
+
+        # Both carry the corrected 4-instruction surface and the account bodies.
+        for idl_text in (rc1_idl_text, rc3_idl_text):
+            idl = json.loads(idl_text)
+            names = [i["name"] for i in idl["instructions"]]
+            self.assertEqual(
+                names, ["create_mint", "create_holding", "mint_to", "set_mint_authority"]
+            )
+            account_names = [a["name"] for a in idl.get("accounts", [])]
+            for account in ("AuthorityInfo", "MintDefinition", "TokenHolding"):
+                self.assertIn(account, account_names)
+
+        # The compliance doc must describe the artifacts honestly: the two
+        # generations coincide, and the spel-generated IDL is the authoritative
+        # on-chain surface (the hand-written one is a design reference).
+        self.assertIn("byte-identical across the rc1", spec)
+        self.assertIn("spel-generated IDL is authoritative for the on-chain", spec)
 
     def test_archival_proof_validator_tracks_all_live_tx_hashes(self):
         validator = VALIDATOR.read_text()
@@ -88,6 +110,39 @@ class SubmissionValidatorTests(unittest.TestCase):
             "58470667b5d45fcc4317684eb7aaad2b19c0cf666bd8c7f85d2b0e1069d0b960",
         ]:
             self.assertIn(tx_hash, validator)
+
+    def test_public_testnet_validator_tracks_all_testnet_hashes(self):
+        validator = VALIDATOR.read_text()
+        for token in [
+            # public testnet deploy + lifecycle (2026-06-03) — superseded pre-fix
+            # run, retained as a historical record
+            "https://testnet.lez.logos.co/",
+            "59e15341b10dfacf6bfeb8436f587e18fb4bf714fc042c79aba9f8878fb0ae2c",  # ImageID
+            "07561014a617dc18c3a420db01c9f752755053eb58f44d8db98871646cb968ba",  # deploy
+            "17d90ea633db426a863efc697239aa158293c20822ff07839a2a0b6f2eeb37d2",  # create_mint
+            "be393bcf82e489bc5a940904ed0e38ea861b61939f43529132ca4c701f29bbd8",  # mint_to(100)
+            "0540648f9f5099296340bcf65d0ac1a4cf89ff226eca7abb27dcdcb0b29f5784",  # set_mint_authority(None)
+            "312ea9f120602f9aa2d574d43fefa73ae25d74e1bd228b9f65317fef8fef4798",  # post-revoke (rejected)
+        ]:
+            self.assertIn(token, validator)
+
+    def test_corrected_guest_validator_tracks_all_testnet_hashes(self):
+        validator = VALIDATOR.read_text()
+        for token in [
+            # public testnet deploy + lifecycle (2026-06-04) — CORRECTED guest
+            # (load-bearing on-chain evidence of the fix)
+            "32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce",  # ImageID == ProgramId
+            "4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF",                       # program (base58)
+            "HtCYkKN5K3dUVnPhJ4tCNpvDrnEcLZKgh8i4PkUjigfu",                       # mint PDA
+            "5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0",  # deploy
+            "7d1dcb04b5f339b33f04a120b7334cf9802720d4a917e600becd62476e44da74",  # create_mint
+            "520d080b833c7e4038a1aa214bba43a3fc97328e8f379a093b74ca3e32be5893",  # create_holding
+            "8c865d0184f55ce5a881e24c8c125cd3729c5f90a4b83d0484c8d1610f743f61",  # mint_to(60)
+            "c63168b7f615221ab2425b2ba003d32183f4df2e482eb4203e4e216675993d21",  # mint_to(40)
+            "8c4b08b5c750c57d0dbb4e9f43c32b7c0f2627ce5508da85408e3aaf01f5a331",  # set_mint_authority(None)
+            "6e92e605e932756332c9721a4e4754f155780069490b256fe67b35f374a972d1",  # post-revoke (rejected)
+        ]:
+            self.assertIn(token, validator)
 
     def test_spel_guest_comments_do_not_claim_unimplemented_semantics(self):
         guest = (ROOT / "spel-spike" / "admin_authority_guest.rs").read_text()

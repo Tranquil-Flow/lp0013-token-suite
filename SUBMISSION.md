@@ -1,10 +1,12 @@
 # LP-0013 Token Authorities — Submission Draft
 
+> **✅ RESOLVED (2026-06-04) — corrected guest deployed + verified on the public testnet.** The init-only holding PDA was split into `create_holding` + mutable `mint_to`, and the corrected four-instruction guest was re-deployed to `testnet.lez.logos.co` (`RISC0_DEV_MODE=0`). The full lifecycle now shows **two accumulating mints (60+40 → 100, variable supply on chain)** and a post-revoke mint **rejected by the authority guard** (`require_authority`), not by an `init` side effect — the holding already exists (`mut`). The prior 2026-06-03 testnet hashes are the superseded pre-fix run, retained as history. Authoritative state → [`RESUBMISSION_STATUS.md`](RESUBMISSION_STATUS.md).
+
 ## Summary
 
 This submission implements token mint authority lifecycle support for Logos λPrize LP-0013.
 
-It provides a self-contained Rust workspace proving the core authority model, token mint state transitions, instruction-level semantics, SDK ergonomics, CLI demos, runnable examples, CI, a canonical IDL artifact, real SPEL-generated IDL evidence, and a SPEL guest source that ports the same authority semantics into the RISC0/LEZ account adapter. The current tree is locally green for the offline suite; host-side SPEL/LEZ evidence is recorded in `docs/LEZ_PROOF_LOG.md`.
+It provides a self-contained Rust workspace proving the core authority model, token mint state transitions, instruction-level semantics, SDK ergonomics, CLI demos, runnable examples, CI, a canonical IDL artifact, real SPEL-generated IDL evidence, and a SPEL guest source that ports the same authority semantics into the RISC0/LEZ account adapter. The offline suite is green (including a repeated-mint / post-revoke-guard contract test). **The corrected guest is deployed and its authority lifecycle is verified on the public LEZ testnet** (`https://testnet.lez.logos.co/`, real consensus, `RISC0_DEV_MODE=0`, 2026-06-04): two accumulating mints (60+40 → 100) demonstrate variable supply on chain, and the post-revoke mint is rejected by the authority guard — the holding already exists (`mut`), so the rejection is `require_authority`, not an `init` side effect. The earlier 2026-06-03 run used the pre-fix single-`init` guest (one mint, init-side-effect rejection) and is retained as a historical record only. Proof log: `docs/LEZ_PROOF_LOG.md`; re-verify read-only with `bash scripts/demo-testnet-live.sh verify`.
 
 ## Repository
 
@@ -93,16 +95,17 @@ The config-PDA-gated example demonstrates the RFP-001-style gate in the offline 
 
 ### IDL / SPEL status
 
-Canonical IDL (hand-written, test-guarded superset):
+Authoritative IDL — real `spel generate-idl` output for the corrected four-instruction guest (exactly what `make idl` emits):
+
+```text
+idl/admin-authority.idl.spel-generated.json              # rc1 pins (v0.2.0-rc1 / spel ed3bbedb)
+idl/admin-authority.idl.spel-generated.rc3-testnet.json  # rc3 / testnet pins (v0.2.0-rc3 / spel 31e52c52)
+```
+
+Hand-written design reference (adds discriminators / execution / errors the generator omits; see its `metadata.caveats`):
 
 ```text
 idl/admin-authority.idl.json
-```
-
-Real SPEL-generated IDL (host spike, 2026-05-17):
-
-```text
-idl/admin-authority.idl.spel-generated.json
 ```
 
 Spike sources for reproducibility:
@@ -121,16 +124,18 @@ docs/SPEL_STATUS.md
 docs/LEZ_PROOF_LOG.md
 ```
 
-The hand-written IDL ships as the canonical artifact because it carries detail the current SPEL revision does not yet emit (instruction discriminators, `execution` block, declared errors, expanded `Option<T>` and nested account-type bodies). The SPEL-generated IDL is checked in alongside as evidence that the same surface re-emerges from the real tool against the same LEZ pin (`v0.2.0-rc1`) and SPEL revision (`ed3bbedb4b684645da05455d30a4a0be7cc4dfe0`) that LP-0017 uses.
+The spel-generated IDL is authoritative for the on-chain surface. Both pin generations are **byte-identical** under the corrected guest (a cross-revision stability check across `v0.2.0-rc1` / spel `ed3bbedb` and `v0.2.0-rc3` = `cf3639d8` / spel `31e52c52`) and both emit the full `AuthorityInfo` / `MintDefinition` / `TokenHolding` account bodies, with `current_authority` as `option<array<u8,32>>`. The generator omits instruction discriminators (LEZ dispatches by enum-variant index), the `execution` block, declared errors, and the instruction-arg `Option<T>` inner type (`initial_authority`/`new_authority` stay `{"defined":"Option"}`, which is why the lifecycle driver passes a strongly-typed enum to `nssa`). The hand-written `idl/admin-authority.idl.json` documents those omitted pieces as a design reference, its `metadata.caveats` disclosing that its 8-byte discriminators are illustrative and its args model the offline mint-program call surface. See `docs/SPEL_STATUS.md` for the full diff.
 
 Claims:
 
 - offline Rust authority suite: proven
-- canonical hand-written IDL: documented and test-guarded
-- real SPEL-generated IDL: regenerated from the semantic guest and committed alongside as additive evidence
-- LEZ deploy + four-transaction lifecycle (archival structural-surface, 2026-05-17): proved at the wire/framework layer on the local sequencer (`127.0.0.1:3040`, `RISC0_DEV_MODE=0`) — deploy + create_mint + mint_to + set_mint_authority + post-revoke mint_to, all txhashes captured in `docs/LEZ_PROOF_LOG.md` and `docs/BENCHMARKS.md`
-- LEZ semantic release-candidate rerun (2026-05-18): semantic guest deployed (deploy `b16831c0…04ab5`, block 49551) and full lifecycle exercised — `create_mint` (`7d582e7b…b6f9d63`), `mint_to(100)` (`c474cf82…d3c74f`), `set_mint_authority(None)` (`756ee393…7351c`), post-revoke `mint_to` rejected (`27df9483…2bff`), decoded mint PDA shows `supply=100, current_authority=None, decimals=6`
-- Independent post-rerun re-verification (same day, ~22 min later): re-submitted `set_mint_authority` (`cea5b8c7…fc5eb4`) was rejected on chain with `Program error 2008: authority has been revoked` — the canonical `require_authority` panic from the guest body, observed live on the sequencer; this is direct on-chain semantic proof of the post-revocation guard, complementing the framework-layer rejection captured during the first rerun
+- real SPEL-generated IDL (authoritative): `make idl` output for the corrected four-instruction guest; the rc1 and rc3 pin generations are byte-identical (cross-revision stability) and emit full account bodies
+- hand-written IDL: a test-guarded design reference documenting the discriminators / execution / errors the generator omits, with disclosed caveats
+- **public-testnet deploy + authority lifecycle (2026-06-04, corrected guest): proven on `https://testnet.lez.logos.co/`** under real consensus and `RISC0_DEV_MODE=0` — ProgramId/ImageID `32335764…b0a9ce` (base58 `4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF`), deploy `5b39deec…85cb4ce0`, `create_mint` `7d1dcb04…6e44da74`, `create_holding` `520d080b…32be5893`, `mint_to(60)` `8c865d01…0f743f61`, `mint_to(40)` `c63168b7…5993d21` [accumulates → 100], `set_mint_authority(None)` `8c4b08b5…01f5a331`, post-revoke `mint_to` `6e92e605…374a972d1` never included; mint-PDA readback `authority=None, supply=100, decimals=6` and holding `balance=100`. The two accumulating mints demonstrate variable supply on chain, and the post-revoke rejection is the authority guard (`require_authority`), not an init side effect — the holding already exists (`mut`). Re-verify read-only: `bash scripts/demo-testnet-live.sh verify`.
+- public-testnet run (2026-06-03) — **SUPERSEDED pre-fix build, retained as history only:** ProgramId `4153e159…2caeb08f`, single `mint_to(100)`; its post-revoke rejection came from the `init` side effect, not the guard, and variable supply was never demonstrated. Do not cite as fix evidence. See `docs/LEZ_PROOF_LOG.md` and `RESUBMISSION_STATUS.md`.
+- LEZ deploy + four-transaction lifecycle (archival structural-surface, 2026-05-17, local-sequencer corroboration): proved at the wire/framework layer on the local sequencer (`127.0.0.1:3040`, `RISC0_DEV_MODE=0`) — deploy + create_mint + mint_to + set_mint_authority + post-revoke mint_to, all txhashes captured in `docs/LEZ_PROOF_LOG.md` and `docs/BENCHMARKS.md`
+- LEZ semantic release-candidate rerun (2026-05-18, local-sequencer corroboration): semantic guest deployed (deploy `b16831c0…04ab5`, block 49551) and full lifecycle exercised — `create_mint` (`7d582e7b…b6f9d63`), `mint_to(100)` (`c474cf82…d3c74f`), `set_mint_authority(None)` (`756ee393…7351c`), post-revoke `mint_to` rejected (`27df9483…2bff`), decoded mint PDA shows `supply=100, current_authority=None, decimals=6`
+- Independent post-rerun re-verification (2026-05-18 localnet, ~22 min later): re-submitted `set_mint_authority` (`cea5b8c7…fc5eb4`) was rejected on chain with `Program error 2008: authority has been revoked` — the canonical `require_authority` panic from the guest body, observed live on the local sequencer (whose logs, unlike the public testnet's, expose the exact guest error string); complements the testnet state-level invariant above
 - in-guest authority semantics: source ported in `spel-spike/admin_authority_guest.rs` — `mint_to` enforces nonzero amount, current-authority authorization, revoked-authority rejection, supply/balance overflow checks, and post-state writes, with the holding account claimed as a program-owned PDA on first mint; `set_mint_authority` enforces current-authority authorization and persists rotation/revocation
 
 ## Local verification
@@ -162,7 +167,7 @@ cargo clippy --workspace --all-targets -- -D warnings
 
 ## Demo video
 
-Narrated terminal demo (RISC0_DEV_MODE=0 live LEZ lifecycle): <https://youtu.be/3hQd2G8O-UM>
+**Re-record pending (Evi).** The previously linked narrated demo (<https://youtu.be/3hQd2G8O-UM>, recorded 2026-05-20) narrates the *local-sequencer* lifecycle — it predates the corrected public-testnet run, so its on-chain evidence is exactly the localnet-only kind λPrize reviewers reject. It must be replaced before this PR is opened. The testnet-first narration script is ready at `docs/DEMO_VIDEO_SCRIPT.md` (Scene 5 runs `bash scripts/demo-testnet-live.sh verify` live against `testnet.lez.logos.co` on camera, now showing the corrected two-accumulating-mint + guard-rejection lifecycle); recording it is the one remaining human task. Paste the new link here and in the README once recorded.
 
 ## λPrize PR
 
@@ -176,8 +181,8 @@ Submitted upstream as <https://github.com/logos-co/lambda-prize/pull/57>.
 - [ ] `bash scripts/demo.sh` passes.
 - [ ] `docs/SPEC_COMPLIANCE.md` is current.
 - [ ] `docs/SPEL_STATUS.md` reflects the host-side spike and release-candidate semantic guest status.
-- [ ] `idl/admin-authority.idl.json` is clearly marked as the canonical hand-written superset, with SPEL-generated evidence checked in alongside.
+- [ ] `idl/admin-authority.idl.spel-generated.json` is the authoritative IDL for the corrected four-instruction surface; `idl/admin-authority.idl.json` is clearly marked as a hand-written design reference with disclosed caveats.
 - [ ] `RISC0_DEV_MODE=0` proof logs are captured.
-- [x] Demo video link is included — <https://youtu.be/3hQd2G8O-UM>.
+- [ ] Demo video re-recorded against the public-testnet lifecycle and link updated (the old <https://youtu.be/3hQd2G8O-UM> is the 2026-05-20 localnet recording — must be replaced; script ready at `docs/DEMO_VIDEO_SCRIPT.md`).
 - [ ] No private keys, seeds, credentials, or private chat excerpts are committed.
 - [ ] No AI attribution is present in commit messages.

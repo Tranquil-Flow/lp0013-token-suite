@@ -1,0 +1,33 @@
+[package]
+name = "admin_authority_spike-examples"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "generate_idl"
+path = "src/bin/generate_idl.rs"
+
+[[bin]]
+name = "admin_authority_spike_cli"
+path = "src/bin/admin_authority_spike_cli.rs"
+
+[[bin]]
+name = "live_lifecycle"
+path = "src/bin/live_lifecycle.rs"
+
+[dependencies]
+spel-framework = { git = "https://github.com/logos-co/spel.git", rev = "31e52c529baba2205eeeacf5bb52647e84236b94" }
+nssa_core = { git = "https://github.com/logos-blockchain/logos-execution-zone.git", tag = "v0.2.0-rc3" }
+spel = { git = "https://github.com/logos-co/spel.git", rev = "31e52c529baba2205eeeacf5bb52647e84236b94" }
+admin_authority_spike_core = { path = "../admin_authority_spike_core" }
+serde_json = "1.0"
+tokio = { version = "1.28.2", features = ["net", "rt-multi-thread", "sync", "macros"] }
+# Host-side deps for live_lifecycle.rs — pinned to the SAME LEZ rev (v0.2.0-rc3
+# = cf3639d8 = the public testnet) so the wallet/nssa/sequencer client speak the
+# testnet's exact wire format.
+nssa = { git = "https://github.com/logos-blockchain/logos-execution-zone.git", tag = "v0.2.0-rc3" }
+common = { git = "https://github.com/logos-blockchain/logos-execution-zone.git", tag = "v0.2.0-rc3" }
+wallet = { git = "https://github.com/logos-blockchain/logos-execution-zone.git", tag = "v0.2.0-rc3" }
+sequencer_service_rpc = { git = "https://github.com/logos-blockchain/logos-execution-zone.git", tag = "v0.2.0-rc3" }
+borsh = "1.5"
+serde = { version = "1.0", features = ["derive"] }

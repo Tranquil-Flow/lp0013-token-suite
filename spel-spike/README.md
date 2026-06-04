@@ -1,12 +1,16 @@
-# LP-0013 SPEL Spike
+# LP-0013 SPEL Spike (snapshot)
 
-Real SPEL guest source used to regenerate `idl/admin-authority.idl.spel-generated.json` against the on-host Logos toolchain. This directory is documentation/evidence — it is **not** wired into the workspace build to keep the offline submission free of the macOS arm64 RISC0 guest dependency conflict (see `docs/SPEL_STATUS.md`).
+> **The canonical, buildable, deployable program now lives in [`../onchain-program/`](../onchain-program/).** This directory holds loose source snapshots mirroring the `onchain-program` files for at-a-glance reading and reproducibility. They are kept in sync with `onchain-program` but are **not** themselves wired into a build (`onchain-program` is a nested workspace excluded from the parent — see its README).
+
+Real SPEL guest source used to generate `idl/admin-authority.idl.spel-generated.json`.
 
 ## Files
 
-- `admin_authority_guest.rs` — `#[lez_program]` guest module mirroring the three offline instructions (`create_mint`, `mint_to`, `set_mint_authority`) and three account types (`AuthorityInfo`, `MintDefinition`, `TokenHolding`). Drop this in as `methods/guest/src/bin/admin_authority.rs` inside a `spel init` scaffold. The guest now includes the semantic account-adapter port: it decodes Borsh account state, enforces authority/revocation checks, updates supply and balances, and persists authority rotation/revocation. The offline `mint-core` remains the canonical tested reference model.
-- `generate_idl.rs` — driver that invokes `spel_framework::generate_idl!` to emit the IDL. Drop this in as `examples/src/bin/generate_idl.rs` inside the scaffold.
-- `live_lifecycle.rs` — host driver that signs and submits four real transactions against the live LEZ sequencer (`create_mint`, `mint_to(100)`, `set_mint_authority(None)`, `mint_to(post-revoke)`) and reads back the mint PDA. Bypasses the IDL CLI because the current SPEL revision does not expand `Option<T>` args. Drop this in as `examples/src/bin/live_lifecycle.rs` inside the scaffold; see the inline doc comment for env vars.
+(each file mirrors its counterpart under `../onchain-program/`)
+
+- `admin_authority_guest.rs` — the `#[lez_program]` guest module (mirror of `../onchain-program/methods/guest/src/bin/admin_authority_spike.rs`). Four instructions (`create_mint`, `create_holding`, `mint_to`, `set_mint_authority`) and three account types (`AuthorityInfo`, `MintDefinition`, `TokenHolding`). It decodes Borsh account state, enforces authority/revocation checks, accumulates supply and balance across repeated mints, and persists authority rotation/revocation. The recipient holding is claimed once by `create_holding` (`init`) and then mutated by `mint_to` (`mut`), so repeated mints accumulate and the authority guard runs before any write. The offline `mint-core` remains the canonical tested reference model.
+- `generate_idl.rs` — driver that invokes `spel_framework::generate_idl!` to emit the IDL (mirror of `../onchain-program/examples/src/bin/generate_idl.rs`).
+- `live_lifecycle.rs` — host driver that deploys and exercises the full lifecycle (mirror of `../onchain-program/examples/src/bin/live_lifecycle.rs`): `create_mint`, `create_holding`, two accumulating `mint_to` calls (60 + 40 → 100), `set_mint_authority(None)`, and a post-revoke `mint_to` rejected by the guard, then reads back the mint + holding PDAs. Bypasses the IDL CLI because the generator does not expand `Option<T>` args. See the inline doc comment for env vars.
 
 ## Reproduce — IDL generation
 
@@ -31,7 +35,7 @@ make idl
 cat admin_authority_spike-idl.json
 ```
 
-The resulting IDL is what was committed alongside the fallback at `idl/admin-authority.idl.spel-generated.json`. The hand-written `idl/admin-authority.idl.json` is the documented superset (instruction discriminators, execution metadata, named errors, expanded type signatures).
+The resulting IDL is what is committed at `idl/admin-authority.idl.spel-generated.json` (authoritative for the on-chain surface). The hand-written `idl/admin-authority.idl.json` is a design reference documenting the instruction discriminators / execution metadata / named errors the generator omits — with `metadata.caveats` disclosing that those discriminators are illustrative and its args model the offline API.
 
 ## Reproduce — live lifecycle
 
@@ -43,7 +47,8 @@ cargo risczero build --manifest-path methods/guest/Cargo.toml
 export NSSA_WALLET_HOME_DIR=~/Projects/logos-basecamp/lp-0017-whistleblower/whistleblower/.scaffold/wallet
 wallet deploy-program methods/guest/target/riscv32im-risc0-zkvm-elf/docker/admin_authority_spike.bin
 
-# 6. Drive the lifecycle (create_mint → mint_to → set_mint_authority → mint_to-post-revoke → read state).
+# 6. Drive the lifecycle (create_mint → create_holding → mint_to(60) → mint_to(40) →
+#    set_mint_authority(None) → mint_to-post-revoke[rejected] → read mint + holding state).
 cp .../spel-spike/live_lifecycle.rs examples/src/bin/live_lifecycle.rs
 # also add the host-side deps: nssa, common, wallet, sequencer_service_rpc, borsh, serde,
 # risc0-zkvm to examples/Cargo.toml — see the live_lifecycle.rs doc-comment for the full set.

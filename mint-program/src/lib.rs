@@ -289,6 +289,79 @@ mod tests {
     }
 
     #[test]
+    fn variable_supply_allows_repeated_minting_to_same_holding() {
+        // This is the contract the ON-CHAIN SPEL program must match (weboko LP-0013
+        // reliability point): a variable-supply mint can mint repeatedly to the SAME
+        // holding and the balance accumulates — it must NOT be a single-use,
+        // init-only holding. After revocation, a further mint to that same existing
+        // holding is rejected by the authority guard (AuthorityRevoked), NOT by an
+        // AccountAlreadyInitialized / init side effect.
+        let mut runtime = ProgramState::default();
+        runtime
+            .execute(Instruction::CreateMint {
+                mint: mint_id(),
+                authority: Some(authority()),
+                decimals: 6,
+            })
+            .expect("mint can be created");
+
+        runtime
+            .execute(Instruction::MintTo {
+                mint: mint_id(),
+                signer: authority(),
+                destination_owner: owner(),
+                amount: 50,
+            })
+            .expect("first mint to a fresh holding");
+        runtime
+            .execute(Instruction::MintTo {
+                mint: mint_id(),
+                signer: authority(),
+                destination_owner: owner(),
+                amount: 50,
+            })
+            .expect("second mint to the SAME holding accumulates (variable supply)");
+
+        assert_eq!(runtime.mint(&mint_id()).expect("mint exists").supply(), 100);
+        assert_eq!(
+            runtime
+                .holding(&mint_id(), &owner())
+                .expect("holding exists")
+                .balance(),
+            100,
+            "repeated minting to one holding must accumulate, not fail"
+        );
+
+        runtime
+            .execute(Instruction::SetMintAuthority {
+                mint: mint_id(),
+                signer: authority(),
+                new_authority: None,
+            })
+            .expect("authority revokes");
+
+        // The holding ALREADY exists here, so a correct rejection must come from the
+        // authority guard, not from re-initializing an existing account.
+        assert_eq!(
+            runtime.execute(Instruction::MintTo {
+                mint: mint_id(),
+                signer: authority(),
+                destination_owner: owner(),
+                amount: 1,
+            }),
+            Err(ProgramError::Token(TokenError::AuthorityRevoked))
+        );
+        assert_eq!(
+            runtime
+                .holding(&mint_id(), &owner())
+                .expect("holding exists")
+                .balance(),
+            100,
+            "rejected post-revoke mint must not alter the existing holding"
+        );
+    }
+
+    #[test]
     fn wrong_signer_or_missing_mint_leave_state_unchanged() {
         let mut runtime = ProgramState::default();
         runtime

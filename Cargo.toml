@@ -10,6 +10,13 @@ members = [
     "examples/fixed-supply",
     "examples/config-pda-gated",
 ]
+# `onchain-program/` is the deployable LEZ/SPEL program: a RISC0 zkVM guest plus
+# its deploy/lifecycle driver, pinned to the LEZ testnet revisions. It is a
+# self-contained nested workspace that requires the risc0 toolchain (`cargo-risczero`)
+# to build, so it is intentionally excluded from this workspace's `cargo
+# check/test --workspace` gate (which must stay toolchain-light for CI). Build and
+# deploy it from inside its own directory — see `onchain-program/README.md`.
+exclude = ["onchain-program"]
 resolver = "2"
 
 [workspace.package]
