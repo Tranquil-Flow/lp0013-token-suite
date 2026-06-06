@@ -93,13 +93,16 @@ Built against the testnet's rc3 pins (`v0.2.0-rc3` = `cf3639d8`), ImageID `59e15
 
 Cost finding: **deploy and public-transaction execution charge no gas** on this network — the signer's balance was unchanged (150 → 150) across the three included executions; only its nonce advanced (1 → 4). `ProgramDeploymentTransaction` has no signer and affects no accounts. Public-transaction proving is sequencer-side.
 
-Re-verify any time (read-only, from any machine with the `wallet` binary):
+Historical-only verification command for the superseded run (do not use as final
+submission evidence):
 
 ```bash
+# The live verify script now checks the corrected 2026-06-04 run. Use archived
+# wallet queries from this section only if you intentionally need the old PDA.
 bash scripts/demo-testnet-live.sh verify
 ```
 
-This queries each hash with `wallet chain-info transaction --hash …` and decodes the mint PDA with `wallet account get --account-id Public/FrbpfbUb5YpfeKEhsbMzKB5CAv9nbnCQDXbZrDJoQFV7 --raw` → `authority=None, supply=100, decimals=6`. Last confirmed at sequencer block 37513+.
+For the superseded run, archived manual checks queried each old hash with `wallet chain-info transaction --hash …` and decoded the old mint PDA `Public/FrbpfbUb5YpfeKEhsbMzKB5CAv9nbnCQDXbZrDJoQFV7` → `authority=None, supply=100, decimals=6`. The final submission should instead cite the corrected run and its current verifier output.
 
 ## Deploy to live LEZ sequencer (local — corroboration)
 

@@ -48,10 +48,9 @@ jobs:
     # Hosted CI cannot build the RISC0 guest or run a sequencer/faucet, so the
     # on-chain path is NOT part of the per-push gate. This job is manual-only
     # (workflow_dispatch): it builds the LEZ `wallet` and re-verifies the public
-    # testnet evidence read-only. NOTE: the hashes in scripts/demo-testnet-live.sh
-    # are from the pre-fix guest and will be refreshed at the maintainer-authorized
-    # re-deploy of the corrected guest (see RESUBMISSION_STATUS.md); run this after
-    # that refresh for it to evidence the corrected behavior.
+    # testnet evidence read-only. The hashes in scripts/demo-testnet-live.sh are
+    # the corrected 2026-06-04 run; older 2026-06-03 hashes are documented only as
+    # superseded historical evidence.
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:

@@ -17,9 +17,9 @@
   ],
   "instructions": [
     "create_mint",
+    "create_holding",
     "mint_to",
-    "set_mint_authority",
-    "revoke_mint_authority"
+    "set_mint_authority"
   ],
   "spel_idl": "idl/admin-authority.idl.json",
   "rfp_001_compliance": true,
