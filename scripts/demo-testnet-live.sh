@@ -9,7 +9,9 @@
 #
 #   verify   (default)  Read-only. Re-queries the canonical program + transaction
 #                       hashes + mint-PDA state straight from the public sequencer.
-#                       Needs only the `wallet` binary — no build, no faucet, no keys.
+#                       Uses `wallet` when available; otherwise falls back to
+#                       scripts/ci-verify-testnet.sh (curl + python3 only).
+#                       No build, no faucet, no keys.
 #                       This is what a reviewer runs to confirm the submission.
 #
 #   full                Fresh deploy + lifecycle from your own funded account.
@@ -65,10 +67,9 @@ section() { echo ""; echo -e "${BOLD}${YELLOW}▶ $1${RESET}"; echo ""; }
 
 need_wallet() {
   if ! command -v wallet >/dev/null 2>&1; then
-    echo -e "${RED}wallet binary not found on PATH.${RESET}"
-    echo "Build it from LEZ tag v0.1.2 (see the header of this script)."
-    exit 1
+    return 1
   fi
+  return 0
 }
 
 # Set up an isolated, throwaway wallet home pointed at the public testnet, unless the
@@ -94,7 +95,6 @@ JSON
 }
 
 verify_mode() {
-  need_wallet
   banner "LP-0013 — public-testnet evidence re-verification (read-only)"
   echo -e "  ${GREEN}${BOLD}✓ CORRECTED GUEST (2026-06-04):${RESET} ${DIM}create_holding + mutable mint_to."
   echo -e "  Two accumulating mints (60+40 -> 100) prove variable supply works on chain; the"
@@ -107,6 +107,14 @@ verify_mode() {
   echo "  ImageID : ${IMAGE_ID}"
   echo "  MintPDA : ${MINT_PDA}"
   echo ""
+
+  if ! need_wallet; then
+    echo -e "  ${YELLOW}wallet binary not found on PATH; using curl-only JSON-RPC verifier.${RESET}"
+    echo -e "  ${DIM}\$ bash scripts/ci-verify-testnet.sh${RESET}"
+    bash "$(dirname "$0")/ci-verify-testnet.sh"
+    return
+  fi
+
   setup_wallet_home
 
   section "Sequencer reachable; current block id"
