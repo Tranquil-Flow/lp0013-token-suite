@@ -183,7 +183,7 @@ Submitted upstream as <https://github.com/logos-co/lambda-prize/pull/77>.
 - [x] `docs/SPEL_STATUS.md` reflects the corrected four-instruction guest status.
 - [x] `idl/admin-authority.idl.spel-generated.json` is the authoritative IDL for the corrected four-instruction surface; `idl/admin-authority.idl.json` is clearly marked as a hand-written design reference with disclosed caveats.
 - [x] `RISC0_DEV_MODE=0` proof logs are captured for public testnet and standalone local sequencer.
-- [x] Standalone local-sequencer e2e is included in CI config (`local-sequencer-e2e-preflight` plus manual self-hosted `local-sequencer-e2e`) and has a real 2026-06-09 prepared-host run recorded in `docs/LEZ_PROOF_LOG.md`. Latest hosted CI passed: https://github.com/Tranquil-Flow/lp0013-token-suite/actions/runs/27200130940.
+- [x] Standalone local-sequencer e2e is included in CI config (`local-sequencer-e2e-preflight` plus manual self-hosted `local-sequencer-e2e`) and has a real 2026-06-09 prepared-host run recorded in `docs/LEZ_PROOF_LOG.md`. Hosted CI passed for this CI/preflight evidence path; final branch CI should be checked from GitHub Actions after each push.
 - [x] Demo video re-recorded against the public-testnet lifecycle and link updated: https://youtu.be/rUgsCCPiQfo.
 - [x] No private keys, seeds, credentials, or private chat excerpts are committed.
 - [x] No AI attribution is present in commit messages.
