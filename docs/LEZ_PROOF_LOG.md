@@ -487,9 +487,9 @@ The post-revoke `mint_to` is rejected at the LEZ framework layer with `AccountAl
 | `mint_to(100)` semantic on-chain | green | txhash `c474cf82…d3c74f`, mint PDA `supply=100`, holding PDA `balance=100` |
 | `set_mint_authority(None)` semantic on-chain | green | txhash `756ee393…7351c`, mint PDA `current_authority=None` persisted |
 | `mint_to` post-revoke rejected on chain | green | txhash `27df9483…2bff` not confirmed; `AccountAlreadyInitialized` at the framework layer corroborates the offline `Program error 2008` authority-check rejection |
-| Final mint PDA decoded readback | green | `supply=100`, `current_authority=None`, `decimals=6` — matches the handover's expected post-revocation state |
+| Final mint PDA decoded readback | green | `supply=100`, `current_authority=None`, `decimals=6` — matches the expected post-revocation state |
 
-This semantic rerun supersedes the archival structural-surface evidence above. The 2026-05-17 hashes are kept as historical proof of the wire path; the 2026-05-18 hashes are the release-candidate semantic proof. Public push and Logos PR remain gated on explicit Evi sign-off.
+This semantic rerun supersedes the archival structural-surface evidence above. The 2026-05-17 hashes are kept as historical proof of the wire path; the 2026-05-18 hashes are the release-candidate semantic proof. The final public-testnet evidence is documented above and the upstream Logos PR is open at https://github.com/logos-co/lambda-prize/pull/77.
 
 ### Independent post-rerun re-verification (2026-05-18, ~22 min after rerun)
 

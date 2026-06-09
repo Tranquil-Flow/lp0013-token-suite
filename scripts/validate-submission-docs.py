@@ -56,7 +56,6 @@ README_REQUIRED_PHRASES = [
     "cargo run -p config-pda-gated",
     "cargo clippy --workspace --all-targets -- -D warnings",
     "RISC0_DEV_MODE=0",
-    "explicit Evi sign-off",
     "MIT",
     "Apache-2.0",
     "testnet.lez.logos.co",
@@ -132,12 +131,10 @@ LEZ_PROOF_LOG_REQUIRED_PHRASES = [
 ]
 
 HOST_TOOLCHAIN_REQUIRED_PHRASES = [
-    "LP-0017 was previously built on this computer outside the sandbox",
-    "Claude Code macOS shell",
+    "Host Logos toolchain notes",
     "RISC0_DEV_MODE=0",
-    "NSSA_SEQUENCER_URL=http://127.0.0.1:3040",
     "docs/LEZ_PROOF_LOG.md",
-    "Do not push",
+    "Public-testnet verification",
 ]
 
 SUBMISSION_REQUIRED_PHRASES = [
@@ -145,7 +142,6 @@ SUBMISSION_REQUIRED_PHRASES = [
     "Tranquil-Flow/lp0013-token-suite",
     "offline Rust authority suite: proven",
     "admin-authority.idl.spel-generated.json",
-    "explicit Evi sign-off",
     "RISC0_DEV_MODE=0",
     "No private keys",
     "testnet.lez.logos.co",
@@ -161,7 +157,7 @@ SOLUTION_REQUIRED_PHRASES = [
     "scripts/demo-testnet-live.sh verify",
     "Recorded narrated demo video",
     "https://youtu.be/rUgsCCPiQfo",
-    "superseded historical evidence only",
+    "final video evidence",
 ]
 
 EXPECTED_IDL_INSTRUCTIONS = ["create_mint", "create_holding", "mint_to", "set_mint_authority"]

@@ -240,11 +240,7 @@ Thanks for evaluating LP-0013.
 
 ## Recording checklist
 
-- [ ] **Scene 5a is the load-bearing shot — it runs live against the public testnet.** The corrected guest is already deployed and the hashes in `scripts/demo-testnet-live.sh` are current; dry-run `bash scripts/demo-testnet-live.sh verify` once off-camera and confirm it exits 0 with every verdict matching (deploy → `ProgramDeployment`; create_mint / create_holding / two mints / set_mint_authority → `Public`; post-revoke mint → `None`) and the PDA decodes show mint `supply=100, authority=None, decimals=6` and holding `balance=100`. The only prerequisite is the `wallet` binary on PATH (built from LEZ `v0.1.2` / `v0.2.0-rc3`); no localnet, no faucet.
-- [ ] Network reachable: `curl -s -o /dev/null -w '%{http_code}' https://testnet.lez.logos.co/` should be reachable (a bare GET returns `405 POST required` — that's healthy). If the testnet is down at record time, pause and retry rather than narrating stale hashes as if live.
-- [ ] Scene 5b corroboration is read off `docs/LEZ_PROOF_LOG.md` (no live localnet needed) — you're pointing at the already-captured 2026-05-18 panic line, not re-running the local sequencer. If you *do* want to re-run it live, the local sequencer at `127.0.0.1:3040` must be up under the LP-0017 scaffold with `RISC0_DEV_MODE=0`.
-- [ ] Terminal font ≥ 16 pt.
-- [ ] Editor wraps long lines so tx hashes don't word-wrap mid-hex.
-- [ ] No private wallet paths or seed phrases visible. The throwaway testnet wallet `demo-testnet-live.sh` creates is fine to show; do not show `.nssa-testnet-wallet` or any funded/keyed home.
-- [ ] No private chat windows, Slack, or DMs visible.
-- [ ] After recording, host the video somewhere stable (YouTube unlisted, Loom) and paste the link into `SUBMISSION.md` under "Demo video" + the README video line, **replacing** the old `youtu.be/3hQd2G8O-UM` localnet link, before opening the λPrize PR.
+- [x] Public-testnet verifier dry-run completed before final publication.
+- [x] Final narrated demo hosted at https://youtu.be/rUgsCCPiQfo.
+- [x] Final video link added to `SUBMISSION.md`, `README.md`, `module.json`, and `solutions/LP-0013.md`.
+- [x] Final upstream Logos PR opened at https://github.com/logos-co/lambda-prize/pull/77.

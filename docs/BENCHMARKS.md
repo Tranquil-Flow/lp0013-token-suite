@@ -160,7 +160,7 @@ MintDefinition {
 }
 ```
 
-This matches the handover's expected post-revocation state exactly: `supply = 100` from the pre-revoke `mint_to`, `current_authority = None` from the persisted `set_mint_authority`, `decimals = 6` from `create_mint`. The semantic source (`spel-spike/admin_authority_guest.rs`) enforces current-authority authorization, revoked-authority rejection (`Program error 2008: authority has been revoked`), supply/balance overflow checks, and zero-amount rejection; rotation and revocation are persisted. The on-chain readback confirms these semantics held end-to-end through the LEZ executor.
+This matches the expected post-revocation state exactly: `supply = 100` from the pre-revoke `mint_to`, `current_authority = None` from the persisted `set_mint_authority`, `decimals = 6` from `create_mint`. The semantic source (`spel-spike/admin_authority_guest.rs`) enforces current-authority authorization, revoked-authority rejection (`Program error 2008: authority has been revoked`), supply/balance overflow checks, and zero-amount rejection; rotation and revocation are persisted. The on-chain readback confirms these semantics held end-to-end through the LEZ executor.
 
 The post-revoke `mint_to` is rejected at the LEZ framework layer with `AccountAlreadyInitialized` because the holding PDA was claimed on first mint. The offline `mint-core` tests prove the underlying `require_authority` rejection on the same code path with `Program error 2008`; the on-chain mint state independently proves the revocation is persisted (`current_authority=None`), so future minting cannot succeed semantically either. The combined evidence keeps the invariant honest without overclaiming which rejection layer fires first.
 

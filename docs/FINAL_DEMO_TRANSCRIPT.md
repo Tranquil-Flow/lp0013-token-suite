@@ -24,4 +24,4 @@ Next, `set_mint_authority(None)` revoked the mint authority. Finally, the post-r
 
 The final mint state is authority `None`, supply `100`, and decimals `6`. This proves variable supply before revocation and permanent authority revocation afterwards.
 
-This video supersedes the older pre-fix evidence. The resubmission should cite this corrected public-testnet run only.
+This video demonstrates the corrected public-testnet run and should be cited as the final LP-0013 video evidence.
