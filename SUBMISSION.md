@@ -6,7 +6,7 @@
 
 This submission implements token mint authority lifecycle support for Logos λPrize LP-0013.
 
-It provides a self-contained Rust workspace proving the core authority model, token mint state transitions, instruction-level semantics, SDK ergonomics, CLI demos, runnable examples, CI, a canonical IDL artifact, real SPEL-generated IDL evidence, and a SPEL guest source that ports the same authority semantics into the RISC0/LEZ account adapter. The offline suite is green (including a repeated-mint / post-revoke-guard contract test). **The corrected guest is deployed and its authority lifecycle is verified on the public LEZ testnet** (`https://testnet.lez.logos.co/`, real consensus, `RISC0_DEV_MODE=0`, 2026-06-04): two accumulating mints (60+40 → 100) demonstrate variable supply on chain, and the post-revoke mint is rejected by the authority guard — the holding already exists (`mut`), so the rejection is `require_authority`, not an `init` side effect. Proof log: `docs/LEZ_PROOF_LOG.md`; re-verify read-only with `bash scripts/demo-testnet-live.sh verify`.
+It provides a self-contained Rust workspace proving the core authority model, token mint state transitions, instruction-level semantics, SDK ergonomics, CLI demos, runnable examples, CI, a canonical IDL artifact, real SPEL-generated IDL evidence, and a SPEL guest source that ports the same authority semantics into the RISC0/LEZ account adapter. The offline suite is green (including a repeated-mint / post-revoke-guard contract test). **The corrected guest is deployed and its authority lifecycle is verified on the public LEZ testnet** (`https://testnet.lez.logos.co/`, real consensus, `RISC0_DEV_MODE=0`, 2026-06-04): two accumulating mints (60+40 → 100) demonstrate variable supply on chain, and the post-revoke mint is rejected by the authority guard — the holding already exists (`mut`), so the rejection is `require_authority`, not an `init` side effect. Proof log: `docs/LEZ_PROOF_LOG.md`; requirements matrix: `docs/LP0013_REQUIREMENTS_MATRIX.md`; re-verify read-only with `bash scripts/demo-testnet-live.sh verify`.
 
 ## Repository
 
@@ -144,6 +144,7 @@ Run:
 ```bash
 bash scripts/check-prereqs.sh
 bash scripts/demo.sh
+bash scripts/preflight-localnet-e2e.sh --report
 ```
 
 `check-prereqs.sh` validates submission artifacts and runs:
@@ -181,7 +182,8 @@ Submitted upstream as <https://github.com/logos-co/lambda-prize/pull/77>.
 - [x] `docs/SPEC_COMPLIANCE.md` is current.
 - [x] `docs/SPEL_STATUS.md` reflects the corrected four-instruction guest status.
 - [x] `idl/admin-authority.idl.spel-generated.json` is the authoritative IDL for the corrected four-instruction surface; `idl/admin-authority.idl.json` is clearly marked as a hand-written design reference with disclosed caveats.
-- [x] `RISC0_DEV_MODE=0` proof logs are captured.
+- [x] `RISC0_DEV_MODE=0` proof logs are captured for public testnet and standalone local sequencer.
+- [x] Standalone local-sequencer e2e is included in CI config (`local-sequencer-e2e-preflight` plus manual self-hosted `local-sequencer-e2e`) and has a real 2026-06-09 prepared-host run recorded in `docs/LEZ_PROOF_LOG.md`.
 - [x] Demo video re-recorded against the public-testnet lifecycle and link updated: https://youtu.be/rUgsCCPiQfo.
 - [x] No private keys, seeds, credentials, or private chat excerpts are committed.
 - [x] No AI attribution is present in commit messages.

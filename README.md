@@ -19,6 +19,7 @@ This workspace provides a self-contained Rust implementation of mint authority l
 - `examples/fixed-supply` — runnable fixed-supply/revoked-authority behavior.
 - `examples/config-pda-gated` — runnable RFP-001-style config-PDA-gated authority flow.
 - `docs/SPEC_COMPLIANCE.md` — honest status map against LP-0013 criteria.
+- `docs/LP0013_REQUIREMENTS_MATRIX.md` — evaluator-facing checklist mapping every LP-0013 requirement to concrete artifacts, commands, and proof logs.
 
 ## Submission posture
 
@@ -89,6 +90,8 @@ Proven locally:
 > **✅ On-chain evidence (2026-06-04, corrected guest).** The corrected guest (`create_mint`, `create_holding`, mutable `mint_to`, `set_mint_authority`) is deployed and exercised on the **public LEZ testnet** (`testnet.lez.logos.co`, real consensus, `RISC0_DEV_MODE=0`). The lifecycle mints twice into one holding — `mint_to(60)` + `mint_to(40)` accumulating to `supply=100` / `balance=100` — then revokes mint authority to `None`; the post-revocation `mint_to` is not included, and the live mint-PDA readback remains `authority=None, supply=100`. Reproduce read-only with `bash scripts/demo-testnet-live.sh verify` (full log: `docs/LEZ_PROOF_LOG.md`).
 
 Narrated demo video: https://youtu.be/rUgsCCPiQfo. This recording demonstrates the corrected public-testnet lifecycle and is the final video evidence for LP-0013.
+
+Strict supportability checklist: `docs/LP0013_REQUIREMENTS_MATRIX.md`. The standalone local-sequencer e2e path is included in CI as `local-sequencer-e2e-preflight` (hosted prerequisite/syntax gate) plus `local-sequencer-e2e` (manual self-hosted LEZ/RISC0 runner). A real prepared-host run passed on 2026-06-09 with `RISC0_DEV_MODE=0`; see `docs/LEZ_PROOF_LOG.md`.
 
 Final λPrize PR status:
 

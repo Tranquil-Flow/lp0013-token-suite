@@ -6,6 +6,52 @@ Host-side proof attempts for LP-0013, capturing exact commands, environment, and
 
 The public-testnet deploy + lifecycle of **2026-06-04** (next section) is the **load-bearing evidence**: it ran the **corrected four-instruction guest** on the shared, no-auth `testnet.lez.logos.co` network under `RISC0_DEV_MODE=0`, with two accumulating mints and a guard-rejected post-revoke mint. The **2026-06-03** run below it is the superseded **pre-fix** run (single-`init` holding, one mint), retained as a historical record. The earlier local-sequencer sessions (2026-05-17 structural, 2026-05-18 semantic, further down this log) are historical corroboration of the wire path and semantics — and the 2026-05-18 localnet run additionally captured the exact guest-panic string (`Program error 2008: authority has been revoked`) that the testnet's hidden sequencer logs cannot surface.
 
+
+## Standalone local-sequencer e2e (2026-06-09) — CORRECTED GUEST, CI-prepared host evidence
+
+This run proves the explicit standalone-sequencer supportability path behind `scripts/demo-localnet.sh` and the manual self-hosted CI job `local-sequencer-e2e` in `.github/workflows/ci.yml`. It was executed on the M4 Pro prepared LEZ/RISC0 host after starting a standalone local sequencer with `lgs localnet start`. Docker Desktop was running so `cargo risczero build` could use the RISC0 guest builder image.
+
+```text
+host:             m4pro / macOS arm64
+sequencer RPC:    http://127.0.0.1:3040
+RISC0_DEV_MODE:   0
+entrypoint:       bash scripts/demo-localnet.sh
+log retained at:  .local/logs/lp0013-local-sequencer-e2e-20260609T102107Z.log on the M4 Pro host
+```
+
+Key output from the run:
+
+```text
+RISC0_DEV_MODE = 0
+ImageID: 32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce - .../admin_authority_spike.bin
+[0] deploy_program           confirmed tx=5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0
+[1] create_mint              confirmed tx=b774e548c20a7cc872fd24db4448d4a3a7d45531cef59f9f9b01c036d9962afe
+[2] create_holding           confirmed tx=b31354653e0e1d967e2574c73319bd97fcecdb4248e04959bb67192a409accba
+[3] mint_to(60)              confirmed tx=3c7c3aa8bc1075b3b744d0c37bf2612e4a1d3f21ee44c1f26ea9f03a30b2675f
+[4] mint_to(40)              confirmed tx=fe148c94547214aaded917d82bd6c84b2dcf54527afc28f4343f939b3fb53399
+[5] set_mint_authority(None) confirmed tx=e071f979ccfa55e309ef3102a94d6de2a5f1beb8850faaac5d630653de9c884d
+[6] mint_to(post-revoke)     rejected as expected (no inclusion) tx=b293da3651b7a74a5cc8838593340c39453d5cd77e032fb4d0eb8cdaeed7bec8
+[7] mint state = OnChainMintDefinition { authority: OnChainAuthorityInfo { authority_type: 0, current_authority: None }, supply: 100, decimals: 6 } (supply=100 via accumulation, authority revoked — OK)
+[8] holding state = OnChainTokenHolding { ... balance: 100 } (balance=100 from two accumulating mints — OK)
+```
+
+The standalone sequencer log captured the semantic rejection string for the post-revoke mint:
+
+```text
+Program error [8008]: Program error 2008: authority has been revoked
+"Guest panicked: Program error [8008]: Program error 2008: authority has been revoked"
+```
+
+Evaluator command path:
+
+```bash
+bash scripts/preflight-localnet-e2e.sh --report
+export RISC0_DEV_MODE=0
+export NSSA_SEQUENCER_URL=http://127.0.0.1:3040
+export NSSA_WALLET_HOME_DIR=<funded-localnet-wallet-home>
+bash scripts/demo-localnet.sh
+```
+
 ## Public testnet deploy + lifecycle (2026-06-04) — CORRECTED GUEST (load-bearing)
 
 The **corrected** LP-0013 guest (init-only holding split into `create_holding` + mutable `mint_to`) was deployed and exercised on the **public LEZ testnet**. This is the evidence that proves the fix; it supersedes the 2026-06-03 pre-fix run below.

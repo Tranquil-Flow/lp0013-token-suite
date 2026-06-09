@@ -26,6 +26,7 @@ REQUIRED_FILES = [
     "docs/HOST_LOGOS_TOOLCHAIN.md",
     "docs/LEZ_PROOF_LOG.md",
     "docs/BENCHMARKS.md",
+    "docs/LP0013_REQUIREMENTS_MATRIX.md",
     "SUBMISSION.md",
     "RESUBMISSION_STATUS.md",
     "solutions/LP-0013.md",
@@ -59,6 +60,7 @@ README_REQUIRED_PHRASES = [
     "MIT",
     "Apache-2.0",
     "testnet.lez.logos.co",
+    "docs/LP0013_REQUIREMENTS_MATRIX.md",
 ]
 
 COMPLIANCE_REQUIRED_PHRASES = [
@@ -68,6 +70,7 @@ COMPLIANCE_REQUIRED_PHRASES = [
     "IDL using SPEL framework",
     "Recorded narrated video: complete",
     "Current Local Verification",
+    "local-sequencer-e2e",
 ]
 
 SPEL_STATUS_REQUIRED_PHRASES = [
@@ -135,6 +138,7 @@ HOST_TOOLCHAIN_REQUIRED_PHRASES = [
     "RISC0_DEV_MODE=0",
     "docs/LEZ_PROOF_LOG.md",
     "Public-testnet verification",
+    "CI local-sequencer e2e",
 ]
 
 SUBMISSION_REQUIRED_PHRASES = [
@@ -146,6 +150,7 @@ SUBMISSION_REQUIRED_PHRASES = [
     "No private keys",
     "testnet.lez.logos.co",
     "public-testnet deploy + authority lifecycle",
+    "docs/LP0013_REQUIREMENTS_MATRIX.md",
 ]
 
 SOLUTION_REQUIRED_PHRASES = [
@@ -158,6 +163,17 @@ SOLUTION_REQUIRED_PHRASES = [
     "Recorded narrated demo video",
     "https://youtu.be/rUgsCCPiQfo",
     "final video evidence",
+    "local-sequencer",
+]
+
+MATRIX_REQUIRED_PHRASES = [
+    "LP-0013 Requirements Matrix",
+    "End-to-end integration tests run against a LEZ sequencer standalone mode and are included in CI",
+    "local-sequencer-e2e-preflight",
+    "local-sequencer-e2e",
+    "RISC0_DEV_MODE=0",
+    "2026-06-09",
+    "https://youtu.be/rUgsCCPiQfo",
 ]
 
 EXPECTED_IDL_INSTRUCTIONS = ["create_mint", "create_holding", "mint_to", "set_mint_authority"]
@@ -278,6 +294,7 @@ def main() -> int:
     require_phrases("docs/LEZ_PROOF_LOG.md", LEZ_PROOF_LOG_REQUIRED_PHRASES)
     require_phrases("SUBMISSION.md", SUBMISSION_REQUIRED_PHRASES)
     require_phrases("solutions/LP-0013.md", SOLUTION_REQUIRED_PHRASES)
+    require_phrases("docs/LP0013_REQUIREMENTS_MATRIX.md", MATRIX_REQUIRED_PHRASES)
     validate_idl()
     validate_spel_generated_idl()
     validate_spel_generated_rc3_idl()

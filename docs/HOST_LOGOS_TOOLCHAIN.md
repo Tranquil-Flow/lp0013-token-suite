@@ -60,8 +60,21 @@ Expected final state:
 For a local sequencer run under `RISC0_DEV_MODE=0`:
 
 ```bash
+bash scripts/preflight-localnet-e2e.sh --report
 bash scripts/demo-localnet.sh --check
+export RISC0_DEV_MODE=0
+export NSSA_WALLET_HOME_DIR=<funded-localnet-wallet-home>
 bash scripts/demo-localnet.sh
 ```
 
 The public testnet does not expose per-transaction CU telemetry. `docs/BENCHMARKS.md` documents the available local-sequencer methodology and labels platform limits explicitly.
+
+
+## CI local-sequencer e2e
+
+`.github/workflows/ci.yml` includes two standalone-localnet entries:
+
+- `local-sequencer-e2e-preflight` runs on hosted CI and reports whether the LEZ/RISC0/wallet prerequisites are present. It also shell-checks the localnet scripts.
+- `local-sequencer-e2e` is a manual `workflow_dispatch` job for a prepared self-hosted runner labeled `self-hosted`, `logos-lez`, and `risc0`. It runs `bash scripts/preflight-localnet-e2e.sh --real-run` and then `bash scripts/demo-localnet.sh` with `RISC0_DEV_MODE=0`.
+
+This split is deliberate: generic hosted runners do not ship a standalone LEZ sequencer, a funded localnet wallet home, or a ready Docker-backed RISC0 guest build environment. The 2026-06-09 M4 Pro run in `docs/LEZ_PROOF_LOG.md` is the retained real-run evidence.

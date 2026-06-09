@@ -43,14 +43,54 @@ jobs:
       - name: Submission validator self-tests
         run: python3 tests/test_validate_submission_docs.py
 
+  local-sequencer-e2e-preflight:
+    name: Standalone LEZ local-sequencer e2e preflight
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Report hosted-runner localnet prerequisites
+        # This job is deliberately a preflight on hosted runners. It is included
+        # in per-push CI so missing LEZ/RISC0/local-wallet prerequisites are
+        # visible, while the real local sequencer e2e is run by the manual
+        # `local-sequencer-e2e` job on a prepared LEZ/RISC0 self-hosted runner.
+        run: bash scripts/preflight-localnet-e2e.sh --report
+
+      - name: Validate localnet demo script syntax
+        run: bash -n scripts/demo-localnet.sh scripts/preflight-localnet-e2e.sh
+
+  local-sequencer-e2e:
+    name: Standalone LEZ local-sequencer e2e (manual self-hosted)
+    # LP-0013 asks for a standalone LEZ-sequencer e2e in CI. Hosted GitHub
+    # runners do not provide the Logos local sequencer, RISC0 guest toolchain,
+    # or a funded localnet wallet home, so the actual e2e job is manual and
+    # targets a prepared self-hosted runner with these labels.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, logos-lez, risc0]
+    env:
+      RISC0_DEV_MODE: "0"
+      NSSA_SEQUENCER_URL: ${{ vars.NSSA_SEQUENCER_URL || 'http://127.0.0.1:3040' }}
+      NSSA_WALLET_HOME_DIR: ${{ secrets.NSSA_WALLET_HOME_DIR }}
+      LP0013_AUTHORITY: ${{ secrets.LP0013_AUTHORITY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check real-run prerequisites
+        run: bash scripts/preflight-localnet-e2e.sh --real-run
+
+      - name: Run standalone local sequencer lifecycle
+        run: bash scripts/demo-localnet.sh
+
   testnet-verify:
-    name: On-chain verification (manual)
-    # Hosted CI cannot build the RISC0 guest or run a sequencer/faucet, so the
-    # on-chain path is NOT part of the per-push gate. This job is manual-only
-    # (workflow_dispatch): it builds the LEZ `wallet` and re-verifies the public
-    # testnet evidence read-only. The hashes in scripts/demo-testnet-live.sh are
-    # the corrected 2026-06-04 run; older 2026-06-03 hashes are documented only as
-    # superseded historical evidence.
+    name: Public-testnet verification (manual read-only)
+    # Manual read-only re-verification of the public testnet evidence. This is
+    # separate from the standalone local-sequencer e2e above: it rebuilds the LEZ
+    # wallet on a hosted runner and re-queries the corrected 2026-06-04 hashes.
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
