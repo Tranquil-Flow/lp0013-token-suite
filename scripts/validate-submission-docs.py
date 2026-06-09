@@ -67,7 +67,7 @@ COMPLIANCE_REQUIRED_PHRASES = [
     "Fixed-supply",
     "RFP-001",
     "IDL using SPEL framework",
-    "not complete",
+    "Recorded narrated video: complete",
     "Current Local Verification",
 ]
 
@@ -160,7 +160,7 @@ SOLUTION_REQUIRED_PHRASES = [
     "6e92e605e932756332c9721a4e4754f155780069490b256fe67b35f374a972d1",
     "scripts/demo-testnet-live.sh verify",
     "Recorded narrated demo video",
-    "Pending human recording",
+    "https://youtu.be/rUgsCCPiQfo",
     "superseded historical evidence only",
 ]
 

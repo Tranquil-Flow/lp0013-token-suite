@@ -167,7 +167,7 @@ cargo clippy --workspace --all-targets -- -D warnings
 
 ## Demo video
 
-**Re-record pending (Evi).** The previously linked narrated demo (<https://youtu.be/3hQd2G8O-UM>, recorded 2026-05-20) narrates the *local-sequencer* lifecycle — it predates the corrected public-testnet run, so its on-chain evidence is exactly the localnet-only kind λPrize reviewers reject. It must be replaced before this PR is opened. The testnet-first narration script is ready at `docs/DEMO_VIDEO_SCRIPT.md` (Scene 5 runs `bash scripts/demo-testnet-live.sh verify` live against `testnet.lez.logos.co` on camera, now showing the corrected two-accumulating-mint + guard-rejection lifecycle); recording it is the one remaining human task. Paste the new link here and in the README once recorded.
+Fresh narrated demo: https://youtu.be/rUgsCCPiQfo. This recording demonstrates the corrected public-testnet lifecycle and replaces the older local-sequencer demo (<https://youtu.be/3hQd2G8O-UM>, recorded 2026-05-20), which predates the corrected public-testnet lifecycle and must not be reused as final evidence.
 
 ## λPrize PR
 
@@ -183,6 +183,6 @@ Submitted upstream as <https://github.com/logos-co/lambda-prize/pull/57>.
 - [ ] `docs/SPEL_STATUS.md` reflects the host-side spike and release-candidate semantic guest status.
 - [ ] `idl/admin-authority.idl.spel-generated.json` is the authoritative IDL for the corrected four-instruction surface; `idl/admin-authority.idl.json` is clearly marked as a hand-written design reference with disclosed caveats.
 - [ ] `RISC0_DEV_MODE=0` proof logs are captured.
-- [ ] Demo video re-recorded against the public-testnet lifecycle and link updated (the old <https://youtu.be/3hQd2G8O-UM> is the 2026-05-20 localnet recording — must be replaced; script ready at `docs/DEMO_VIDEO_SCRIPT.md`).
+- [x] Demo video re-recorded against the public-testnet lifecycle and link updated: https://youtu.be/rUgsCCPiQfo.
 - [ ] No private keys, seeds, credentials, or private chat excerpts are committed.
 - [ ] No AI attribution is present in commit messages.

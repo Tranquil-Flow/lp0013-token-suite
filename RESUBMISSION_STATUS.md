@@ -2,7 +2,7 @@
 
 **As of 2026-06-04. Read this before any other doc's testnet claims.**
 
-PR [#57](https://github.com/logos-co/lambda-prize/pull/57) was **closed** by the reviewer (weboko). The on-chain correctness fix is now **landed in source and verified on the public testnet** (2026-06-04): the corrected four-instruction guest (ImageID/ProgramId `32335764…b0a9ce`) was re-deployed to `testnet.lez.logos.co` and the full lifecycle re-captured — two accumulating mints (60+40 → 100, variable supply on chain) and a guard-rejected post-revoke mint. All six of the reviewer's points are addressed below, and `solutions/LP-0013.md` is drafted in-repo. The remaining work is human/outward-facing: re-record the narrated video, then resubmit (Evi-gated). Treat this file as the source of truth.
+PR [#57](https://github.com/logos-co/lambda-prize/pull/57) was **closed** by the reviewer (weboko). The on-chain correctness fix is now **landed in source and verified on the public testnet** (2026-06-04): the corrected four-instruction guest (ImageID/ProgramId `32335764…b0a9ce`) was re-deployed to `testnet.lez.logos.co` and the full lifecycle re-captured — two accumulating mints (60+40 → 100, variable supply on chain) and a guard-rejected post-revoke mint. The fresh narrated demo video is recorded at https://youtu.be/rUgsCCPiQfo. All six of the reviewer's points are addressed below. The remaining outward-facing step is the Logos resubmission PR (Evi-gated). Treat this file as the source of truth.
 
 ## Reviewer's points (weboko, 2026-06-04)
 
@@ -36,7 +36,7 @@ Applied to the in-repo buildable program (`onchain-program/methods/guest/src/bin
 | 2 | **DONE.** `scripts/demo-localnet.sh` builds `onchain-program/` and drives the full corrected lifecycle against a local sequencer under `RISC0_DEV_MODE=0` (`--check` reports prerequisites); `scripts/demo-testnet-live.sh verify` re-runs the public-testnet evidence read-only from a clean clone. |
 | 1 | **Partial / honestly constrained.** The full on-chain lifecycle has been run e2e against the public LEZ sequencer (the 2026-06-04 run). The offline suite + the doc validator + its self-tests run per-push in CI; a manual `workflow_dispatch` job (`testnet-verify` in `.github/workflows/ci.yml`) re-verifies the on-chain evidence read-only. Hosted CI still cannot build the RISC0 guest or run a sequencer/faucet, so the full on-chain e2e is not a per-push gate (documented in `docs/SPEC_COMPLIANCE.md`). |
 | 4 | **Framing reconciled.** CU methodology stands (deterministic deployed-ELF executor cycles; the public testnet exposes no per-tx CU, so per-op CU is only observable on a local sequencer whose log you control). The committed numbers in `docs/BENCHMARKS.md` are from the pre-fix semantic guest's localnet sessions, clearly labeled; the corrected four-op profile re-measure on a local sequencer is a documented follow-up. Note: any such number is single-run private-node CU — the inherent platform caveat weboko raised, unresolvable on the public testnet which hides per-tx CU. |
-| — | **Remaining (human / Evi-gated):** re-record the narrated video against the corrected lifecycle (script ready at `docs/DEMO_VIDEO_SCRIPT.md`) → resubmit the PR. |
+| — | **Ready for Evi-gated resubmission:** fresh narrated video recorded (https://youtu.be/rUgsCCPiQfo); open the new Logos PR after final validator pass and explicit sign-off. |
 
 ## Canonical on-chain evidence (2026-06-04, corrected guest)
 

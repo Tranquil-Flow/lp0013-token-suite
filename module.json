@@ -24,6 +24,6 @@
   "spel_idl": "idl/admin-authority.idl.json",
   "rfp_001_compliance": true,
   "ci": ".github/workflows/ci.yml",
-  "demo_video_url": "",
+  "demo_video_url": "https://youtu.be/rUgsCCPiQfo",
   "submission_pr": ""
 }

@@ -12,7 +12,6 @@
 #                       Uses `wallet` when available; otherwise falls back to
 #                       scripts/ci-verify-testnet.sh (curl + python3 only).
 #                       No build, no faucet, no keys.
-#                       This is what a reviewer runs to confirm the submission.
 #
 #   full                Fresh deploy + lifecycle from your own funded account.
 #                       Requires the rc3 build tree (see docs/LEZ_PROOF_LOG.md) and a
@@ -35,13 +34,12 @@ BOLD='\033[1m'; DIM='\033[2m'; GREEN='\033[32m'; CYAN='\033[36m'; YELLOW='\033[3
 MODE="${1:-${MODE:-verify}}"
 
 # ---- Canonical public-testnet evidence (2026-06-04, corrected four-instruction guest) ----
-# Deployed + exercised on the public LEZ testnet with the CORRECTED guest (create_holding +
-# mutable mint_to). Two accumulating mints (60+40 -> 100) prove variable supply works on chain;
-# the post-revoke mint is rejected by the authority guard (require_authority, error 2008) — NOT
-# by an account-init side effect, because the holding already exists (mut, not init). This is
-# the genuine fix evidence that supersedes the 2026-06-03 pre-fix run (see docs/LEZ_PROOF_LOG.md).
-# In LEZ a program is content-addressed, so ProgramId == ImageID; base58 form of the program
-# (as `program_owner` on its PDAs / in the explorer): 4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF
+# Deployed + exercised on the public LEZ testnet with create_holding + mutable mint_to.
+# Two accumulating mints (60+40 -> 100) prove variable supply works on chain. After
+# authority revocation, the post-revoke mint is rejected and the final mint state remains
+# authority=None, supply=100. In LEZ a program is content-addressed, so ProgramId ==
+# ImageID; base58 form of the program (as `program_owner` on its PDAs / in the explorer):
+# 4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF
 SEQ_ADDR="https://testnet.lez.logos.co/"
 PROGRAM_ID="32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce"
 IMAGE_ID="32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce"
@@ -96,11 +94,9 @@ JSON
 
 verify_mode() {
   banner "LP-0013 — public-testnet evidence re-verification (read-only)"
-  echo -e "  ${GREEN}${BOLD}✓ CORRECTED GUEST (2026-06-04):${RESET} ${DIM}create_holding + mutable mint_to."
-  echo -e "  Two accumulating mints (60+40 -> 100) prove variable supply works on chain; the"
-  echo -e "  post-revoke mint is rejected by the authority guard (require_authority), NOT by an"
-  echo -e "  init side effect — the holding already exists (mut). This supersedes the 2026-06-03"
-  echo -e "  pre-fix run. See docs/LEZ_PROOF_LOG.md and RESUBMISSION_STATUS.md.${RESET}"
+  echo -e "  ${GREEN}${BOLD}✓ Token authority lifecycle:${RESET} ${DIM}create_holding + mutable mint_to."
+  echo -e "  Two accumulating mints (60+40 -> 100) prove variable supply works on chain."
+  echo -e "  After authority revocation, the post-revoke mint is rejected and final supply remains 100.${RESET}"
   echo ""
   echo "  Network : ${SEQ_ADDR} (real consensus, RISC0_DEV_MODE=0)"
   echo "  Program : ${PROGRAM_ID}"

@@ -88,12 +88,12 @@ Proven locally:
 
 > **✅ On-chain evidence (2026-06-04, corrected guest).** The corrected guest (two-instruction `create_holding` + mutable `mint_to`, ImageID/ProgramId `32335764…b0a9ce`) is deployed and exercised on the **public LEZ testnet** (`testnet.lez.logos.co`, real consensus, `RISC0_DEV_MODE=0`). The lifecycle mints twice into one holding — `mint_to(60)` (`8c865d01…`) + `mint_to(40)` (`c63168b7…`) accumulating to `supply=100` / `balance=100` (variable supply on chain) — then `set_mint_authority(None)` (`8c4b08b5…`), then a post-revoke `mint_to` (`6e92e605…`) that is **never included**: because the holding already exists (`mut`, not `init`), the rejection is the authority guard (`require_authority`, error 2008), and the live mint-PDA readback shows `authority=None, supply=100` (the +7 never landed). Reproduce read-only with `bash scripts/demo-testnet-live.sh verify` (full log: `docs/LEZ_PROOF_LOG.md`). The earlier 2026-06-03 public-testnet run (ProgramId `4153e159…`/ImageID `59e15341…`) and the 2026-05-17/05-18 local-sequencer spikes were against the **pre-fix single-`init` guest** (one mint, init-side-effect rejection) and are retained in `docs/LEZ_PROOF_LOG.md` as historical records only. Also valid independent of the fix: the rc3 pins (`v0.2.0-rc3` = `cf3639d8`) build cleanly on macOS arm64; public-tx execution is sequencer-side and charges no gas; `spel generate-idl` output is checked in for the corrected four-instruction surface (`idl/admin-authority.idl.spel-generated*.json`). Authoritative status + full plan: [`RESUBMISSION_STATUS.md`](RESUBMISSION_STATUS.md).
 
-Narrated demo video: re-record pending (human) against the **corrected** testnet lifecycle. The previously linked video (<https://youtu.be/3hQd2G8O-UM>, 2026-05-20) narrates the superseded local-sequencer lifecycle and predates both the public-testnet run and this fix. Testnet-first narration script: `docs/DEMO_VIDEO_SCRIPT.md` (Scene 5 re-verifies the corrected lifecycle live via `bash scripts/demo-testnet-live.sh verify`).
+Narrated demo video: https://youtu.be/rUgsCCPiQfo. This fresh recording demonstrates the corrected public-testnet lifecycle and replaces the superseded local-sequencer video (<https://youtu.be/3hQd2G8O-UM>, 2026-05-20), which predates both the public-testnet run and this fix.
 
-Still required before final λPrize PR:
+Final λPrize PR status:
 
-- a narrated demo video of the **public-testnet** lifecycle (the script's Scene 5 re-verifies it live via `bash scripts/demo-testnet-live.sh verify`),
-- public repository push and Logos PR only after explicit Evi sign-off.
+- narrated public-testnet demo video recorded and linked above;
+- public repository update and Logos PR publication remain gated on explicit Evi sign-off.
 
 ## License
 

@@ -16,7 +16,7 @@ This document tracks the submission against the LP-0013 success criteria and kee
   - `examples/variable-supply` is a runnable evaluator example for the same lifecycle.
 - Fixed-supply/revoked-authority behavior: proven in pure Rust/offline harness.
   - `mint-cli demo-fixed` and `examples/fixed-supply` show that a fixed mint starts with no mint authority and rejects future minting.
-- Documentation and examples: complete except narrated video.
+- Documentation and examples: complete; narrated demo video recorded at https://youtu.be/rUgsCCPiQfo.
   - README has quick-start, verification, and current status.
   - Three runnable examples exist: variable supply, fixed supply, and config-PDA-gated.
   - Per-example README files document each flow.
@@ -57,7 +57,7 @@ This document tracks the submission against the LP-0013 success criteria and kee
   - `scripts/demo-localnet.sh` builds the in-repo `onchain-program/` guest and drives the full corrected lifecycle (create_mint → create_holding → two accumulating mints → revoke → guard-rejected post-revoke mint) against a local LEZ sequencer; `--check` reports prerequisites.
   - `scripts/demo-testnet-live.sh verify` re-verifies the public-testnet deploy + lifecycle straight from the sequencer (read-only; needs only the `wallet` binary, no build or faucet); its `full` mode documents a fresh deploy from a funded account. (Its current hashes are the pre-fix run, to be refreshed at re-deploy.)
   - `onchain-program/examples/src/bin/live_lifecycle.rs` is the LEZ lifecycle driver (runs against localnet or the public testnet via env config).
-- Recorded narrated video: not complete.
+- Recorded narrated video: complete — https://youtu.be/rUgsCCPiQfo.
 
 ## Current Local Verification
 
