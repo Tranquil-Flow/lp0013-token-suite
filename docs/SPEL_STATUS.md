@@ -65,21 +65,29 @@ variant index), and its instruction `args` model the offline mint-program
 flattened call surface rather than the on-chain account/arg split. For anything
 about the actual on-chain surface, the spel-generated IDL is authoritative.
 
-## Fallback artifact
+## Hand-written design-reference artifact
 
-`idl/admin-authority.idl.json` is the canonical IDL shipped with the submission. It mirrors the proven offline instruction surface:
+`idl/admin-authority.idl.json` is retained as a hand-written design reference,
+not as the canonical on-chain IDL. The authoritative on-chain artifact is the
+SPEL-generated four-instruction IDL:
+
+- `idl/admin-authority.idl.spel-generated.json`
+- `idl/admin-authority.idl.spel-generated.rc3-testnet.json`
+
+Those generated files mirror the corrected deployed surface:
 
 - `create_mint`
+- `create_holding`
 - `mint_to`
 - `set_mint_authority`
 
-And documents the account types needed by `spel inspect`-style consumers:
+and include the account types needed by `spel inspect`-style consumers:
 
 - `AuthorityInfo`
 - `MintDefinition`
 - `TokenHolding`
 
-The fallback IDL is test-guarded by:
+The hand-written design reference is test-guarded by:
 
 ```bash
 cargo test -p admin-authority-spel fallback_idl_documents_token_authority_surface
@@ -90,11 +98,11 @@ cargo test -p admin-authority-spel fallback_idl_documents_token_authority_surfac
 `docs/LEZ_PROOF_LOG.md` records four proof sessions:
 
 - **2026-06-04 — public testnet, CORRECTED guest (load-bearing):** the corrected four-instruction guest (ImageID/ProgramId `32335764…b0a9ce`, base58 `4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF`) was deployed and exercised on `testnet.lez.logos.co` under `RISC0_DEV_MODE=0`: deploy `5b39deec…85cb4ce0` (`Some(ProgramDeployment)`), `create_mint` `7d1dcb04…6e44da74`, `create_holding` `520d080b…32be5893`, `mint_to(60)` `8c865d01…0f743f61`, `mint_to(40)` `c63168b7…5993d21` [accumulates → 100], `set_mint_authority(None)` `8c4b08b5…01f5a331`, post-revoke `mint_to` never included (`6e92e605…374a972d1` → `chain-info` None). Live mint-PDA readback decodes `authority=None, supply=100, decimals=6`; holding `balance=100`. Two accumulating mints prove variable supply on chain, and the post-revoke rejection is the authority guard (`require_authority`), not an init side effect (the holding already exists, `mut`). Re-verify read-only with `bash scripts/demo-testnet-live.sh verify`.
-- **2026-06-03 — public testnet (SUPERSEDED by the correctness fix; do not cite):** the semantic guest, rebuilt against the testnet's rc3 pins (ImageID `59e15341…fb0ae2c`, ProgramId `4153e159…2caeb08f`), was deployed and exercised on `testnet.lez.logos.co` under `RISC0_DEV_MODE=0`: deploy `07561014…cb968ba` (`Some(ProgramDeployment)`), `create_mint` `17d90ea6…eeb37d2`, `mint_to(100)` `be393bcf…f29bbd8`, `set_mint_authority(None)` `0540648f…b29f5784`, post-revoke `mint_to` never included (`312ea9f1…8fef4798` → `chain-info` None). Live mint-PDA readback decodes `authority=None, supply=100, decimals=6`. **This run used the pre-fix guest:** `supply=100` is a single mint (the single-use `init` bug), not demonstrated variable supply, and the post-revoke rejection came from the `init` side effect, not the authority guard. Retained for history; superseded by the 2026-06-04 corrected run above.
+- **2026-06-03 — public testnet (historical pre-fix run):** the semantic guest, rebuilt against the testnet's rc3 pins (ImageID `59e15341…fb0ae2c`, ProgramId `4153e159…2caeb08f`), was deployed and exercised on `testnet.lez.logos.co` under `RISC0_DEV_MODE=0`: deploy `07561014…cb968ba` (`Some(ProgramDeployment)`), `create_mint` `17d90ea6…eeb37d2`, `mint_to(100)` `be393bcf…f29bbd8`, `set_mint_authority(None)` `0540648f…b29f5784`, post-revoke `mint_to` never included (`312ea9f1…8fef4798` → `chain-info` None). Live mint-PDA readback decodes `authority=None, supply=100, decimals=6`. **This run used the pre-fix guest:** `supply=100` is a single mint (the single-use `init` bug), not demonstrated variable supply, and the post-revoke rejection came from the `init` side effect, not the authority guard. Retained only as history; superseded by the 2026-06-04 corrected run above.
 - 2026-05-17 — structural-surface spike (localnet, corroboration): real IDL generation, RISC0 guest build, live local-sequencer deploy, four signed lifecycle transactions. Proved the SPEL/LEZ wire path and exposed the semantic gap in the first spike.
 - 2026-05-18 — semantic release-candidate rerun (localnet, corroboration): the guest source was advanced from structural stub to semantic source (`mint_to` decodes mint/holding state, enforces nonzero amount, current-authority authorization, revoked-authority rejection, and supply/balance overflow checks, then writes updated post-states; `set_mint_authority` enforces the current authority and persists rotation/revocation; holding accounts are claimed as program PDAs so the LEZ executor accepts the mutation). The semantic guest was rebuilt (ImageID `58470667…d0b960`, 480,352-byte ELF), redeployed (deploy tx `b16831c0…04ab5`, block 49551), and re-driven: `create_mint` confirmed (`7d582e7b…b6f9d63`), `mint_to(100)` confirmed (`c474cf82…d3c74f`), `set_mint_authority(None)` confirmed (`756ee393…7351c`), post-revoke `mint_to` rejected (`27df9483…2bff`). This localnet run additionally captured the exact guest panic (`Program error 2008: authority has been revoked`) that the testnet's hidden sequencer logs cannot surface.
 
-The **2026-06-04 run is the load-bearing on-chain evidence** (corrected four-instruction guest). The 2026-06-03 testnet run and the two 2026-05 localnet sessions predate the correctness fix and are retained as corroboration that the SPEL/LEZ wire path and authority semantics work end-to-end (the 2026-05-18 localnet run additionally captured the exact `Program error 2008` guard panic the testnet's hidden logs cannot surface). Ready now: the offline release gates, the corrected source (two-instruction model — `create_holding` + mutable `mint_to`), the SPEL-generated IDL (regenerated for the four-instruction surface; rc1 and rc3 generations byte-identical), and the deployed + verified testnet lifecycle. The one remaining task before the public PR is a **narrated demo video** of the corrected lifecycle (human task).
+The **2026-06-04 run is the load-bearing on-chain evidence** (corrected four-instruction guest). The 2026-06-03 testnet run and the two 2026-05 localnet sessions predate the correctness fix and are retained as corroboration that the SPEL/LEZ wire path and authority semantics work end-to-end (the 2026-05-18 localnet run additionally captured the exact `Program error 2008` guard panic the testnet's hidden logs cannot surface). Ready now: the offline release gates, the corrected source (`create_holding` + mutable `mint_to`), the SPEL-generated IDL (regenerated for the four-instruction surface; rc1 and rc3 generations byte-identical), the deployed + verified testnet lifecycle, and the final narrated demo video linked from the submission files.
 
 ## rc3 / testnet-matching IDL regeneration (2026-06-03)
 

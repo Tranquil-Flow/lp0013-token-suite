@@ -29,6 +29,7 @@ class SubmissionValidatorTests(unittest.TestCase):
             "README.md": [
                 "remaining submission work is the bounded SPEL/IDL + LEZ local-sequencer integration gate",
                 "optional final host re-run after the semantic guest port",
+                "Remaining (human): re-record the narrated video against the corrected lifecycle, then resubmit.",
             ],
             "SUBMISSION.md": [
                 "The real SPEL/LEZ proof remains the final integration gate",
@@ -39,6 +40,8 @@ class SubmissionValidatorTests(unittest.TestCase):
                 "Remaining steps to record a full LEZ proof",
                 "This work is staged for the Evi sign-off gate before any push or PR.",
                 "rerun `spel-spike/live_lifecycle.rs` on the host once after Evi sign-off",
+                "The one remaining task before the public PR is a **narrated demo video**",
+                "is the canonical IDL shipped with the submission",
             ],
             "docs/SPEC_COMPLIANCE.md": [
                 "final host proof docs pending after real run",
