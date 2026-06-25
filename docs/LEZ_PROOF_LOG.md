@@ -549,3 +549,9 @@ To independently verify the chain state we documented, the lifecycle driver was 
 | re-`mint_to(post-revoke)` | `83f9c26bba5cdae7fb0793f91036f5da71c699feae74f2cb2f06aff33e316418` | `ProgramExecutionFailed("Guest panicked: account validation failed: AccountAlreadyInitialized { account_index: 1 }")` — holding PDA already initialized |
 
 Crucially, the re-`set_mint_authority` attempt reaches the guest body (the mint PDA is already program-owned, so the init check does not apply to it; only the holding PDA gets `init`). The guest then executes `require_authority`, observes `current_authority == None`, and panics with `Program error 2008: authority has been revoked` — the exact semantic rejection the offline `mint-core` tests prove. This is on-chain semantic proof that the post-revocation guard fires for real, not just at the framework layer.
+
+## Current public-testnet refresh status (2026-06-25)
+
+Reviewer requested a fresh re-deploy/re-anchor because Logos reset `testnet.lez.logos.co` after the June 4 capture. The read-only verifier now supports the current snake_case JSON-RPC methods (`get_transaction_by_hash`, `get_account`) as well as the legacy camelCase methods and fails closed when the recorded pre-reset transactions are absent.
+
+Current blocker observed during refresh attempt: the rc3 `wallet` binary panics/errors against the current public sequencer error schema (`unknown field name, expected code/message/data`) before account health or sends can proceed, and the prepared M4 host currently cannot rebuild the RISC0 guest because Docker is not running. Until wallet/tooling is restored and the program is redeployed, the June 4 hashes must be treated as historical evidence, not current live state.

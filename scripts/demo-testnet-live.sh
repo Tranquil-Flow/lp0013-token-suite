@@ -104,8 +104,8 @@ verify_mode() {
   echo "  MintPDA : ${MINT_PDA}"
   echo ""
 
-  if ! need_wallet; then
-    echo -e "  ${YELLOW}wallet binary not found on PATH; using curl-only JSON-RPC verifier.${RESET}"
+  if [[ "${LP0013_FORCE_CURL_VERIFY:-0}" == "1" ]] || ! need_wallet; then
+    echo -e "  ${YELLOW}using curl-only JSON-RPC verifier (wallet unavailable or LP0013_FORCE_CURL_VERIFY=1).${RESET}"
     echo -e "  ${DIM}\$ bash scripts/ci-verify-testnet.sh${RESET}"
     bash "$(dirname "$0")/ci-verify-testnet.sh"
     return

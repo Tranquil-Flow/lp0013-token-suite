@@ -33,7 +33,19 @@ tmpdir="$(mktemp -d -t lp0013-ci-verify-XXXX)"
 trap 'rm -rf "$tmpdir"' EXIT
 for entry in "${TXS[@]}"; do
   IFS='|' read -r label hash expected <<< "$entry"
-  resp="$(rpc getTransaction "[\"$hash\"]" || true)"
+  resp="$(rpc get_transaction_by_hash "[\"$hash\"]" || true)"
+  if python3 - <<'PY' "$resp" >/dev/null 2>&1
+import json, sys
+try:
+    data=json.loads(sys.argv[1])
+except Exception:
+    sys.exit(1)
+err=data.get('error')
+sys.exit(0 if isinstance(err, dict) and err.get('code') == -32601 else 1)
+PY
+  then
+    resp="$(rpc getTransaction "[\"$hash\"]" || true)"
+  fi
   resp_file="$tmpdir/tx-${hash}.json"
   printf '%s' "$resp" > "$resp_file"
   if python3 - "$expected" "$resp_file" <<'PY' 2>/dev/null
@@ -44,8 +56,10 @@ try:
     result = json.load(open(path, "r", encoding="utf-8")).get("result")
 except Exception:
     sys.exit(1)
+if isinstance(result, dict) and "transaction" in result:
+    result = result.get("transaction")
 if expected == "present":
-    ok = isinstance(result, str) and len(result) > 0
+    ok = result is not None and (not isinstance(result, str) or len(result) > 0)
 else:
     ok = result is None
 sys.exit(0 if ok else 1)
@@ -59,7 +73,19 @@ PY
 done
 
 echo "Verifying final mint PDA state"
-acct_resp="$(rpc getAccount "[\"$MINT_PDA\"]" || true)"
+acct_resp="$(rpc get_account "[\"$MINT_PDA\"]" || true)"
+if python3 - <<'PY' "$acct_resp" >/dev/null 2>&1
+import json, sys
+try:
+    data=json.loads(sys.argv[1])
+except Exception:
+    sys.exit(1)
+err=data.get('error')
+sys.exit(0 if isinstance(err, dict) and err.get('code') == -32601 else 1)
+PY
+then
+  acct_resp="$(rpc getAccount "[\"$MINT_PDA\"]" || true)"
+fi
 acct_file="$tmpdir/account.json"
 printf '%s' "$acct_resp" > "$acct_file"
 if python3 - "$MINT_PDA" "$acct_file" <<'PY'
@@ -68,6 +94,8 @@ pda = sys.argv[1]
 path = sys.argv[2]
 resp = json.load(open(path, "r", encoding="utf-8"))
 result = resp.get("result")
+if isinstance(result, dict) and "account" in result:
+    result = result.get("account")
 if not isinstance(result, dict):
     print(f"  FAIL {pda}: missing account result -> {resp}")
     sys.exit(1)
