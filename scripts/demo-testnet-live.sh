@@ -14,8 +14,10 @@
 #                       No build, no faucet, no keys.
 #
 #   full                Fresh deploy + lifecycle from your own funded account.
-#                       Requires the rc3 build tree (see docs/LEZ_PROOF_LOG.md) and a
-#                       faucet-funded signer. Documented at the bottom of this script.
+#                       Currently documented-only: the 2026-06-26 refresh attempt
+#                       redeployed the program, but public signed lifecycle txs fail
+#                       at sequencer precheck with InvalidSignature (same for built-in
+#                       wallet auth-transfer init). See docs/LEZ_PROOF_LOG.md.
 #
 # Usage:
 #   bash scripts/demo-testnet-live.sh            # verify mode
@@ -173,8 +175,12 @@ PY
 full_mode() {
   banner "LP-0013 — full fresh deploy + lifecycle on the public testnet"
   cat <<EOF
-  This mode deploys a fresh copy and runs the lifecycle from your own funded account.
-  It is documented rather than auto-run because it needs the rc3 build tree and a faucet.
+  This mode documents the intended fresh deploy + lifecycle path. As of 2026-06-26,
+  the reviewer-requested refresh is blocked on the public sequencer: deploy
+  transactions are accepted, but public signed lifecycle transactions fail at
+  precheck with InvalidSignature. Built-in wallet public transactions fail the
+  same way, so do not treat full mode as currently able to refresh the lifecycle
+  until Logos restores wallet/sequencer public-signature compatibility.
 
   1) Build the rc3 / testnet-matching guest (docker required for cargo risczero):
        see docs/LEZ_PROOF_LOG.md "Version-pin landmine" — pin spel/spel-framework to

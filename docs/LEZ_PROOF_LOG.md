@@ -550,8 +550,19 @@ To independently verify the chain state we documented, the lifecycle driver was 
 
 Crucially, the re-`set_mint_authority` attempt reaches the guest body (the mint PDA is already program-owned, so the init check does not apply to it; only the holding PDA gets `init`). The guest then executes `require_authority`, observes `current_authority == None`, and panics with `Program error 2008: authority has been revoked` — the exact semantic rejection the offline `mint-core` tests prove. This is on-chain semantic proof that the post-revocation guard fires for real, not just at the framework layer.
 
-## Current public-testnet refresh status (2026-06-25)
+## Current public-testnet refresh status (2026-06-26)
 
-Reviewer requested a fresh re-deploy/re-anchor because Logos reset `testnet.lez.logos.co` after the June 4 capture. The read-only verifier now supports the current snake_case JSON-RPC methods (`get_transaction_by_hash`, `get_account`) as well as the legacy camelCase methods and fails closed when the recorded pre-reset transactions are absent.
+Reviewer `xAlisher` requested a fresh re-deploy/re-anchor because Logos reset `testnet.lez.logos.co` after the June 4 capture. The repository now fails closed when those pre-reset lifecycle transactions are absent; `LP0013_FORCE_CURL_VERIFY=1 bash scripts/demo-testnet-live.sh verify` currently reports the deploy hash present, all public lifecycle hashes absent, and the mint PDA empty.
 
-Current blocker observed during refresh attempt: after starting Docker Desktop on the prepared M4 host, `cargo risczero build --manifest-path methods/guest/Cargo.toml` rebuilt the guest successfully and reproduced ImageID `32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce` (`admin_authority_spike.bin` sha256 `be03ed3430646a62d7b634a293bece94660f7dcd9707e558d40b7186633d72a1`). The redeploy/re-anchor is still blocked because the rc3 `wallet` / `sequencer_service_rpc` client errors against the current public sequencer error schema (`unknown field name, expected code/message/data`) before deploy, nonce fetch, or sends can proceed. Until wallet/tooling is restored and the program is redeployed, the June 4 hashes must be treated as historical evidence, not current live state.
+Fresh refresh attempt on 2026-06-26 (M4 Pro, repo SHA `2a44aa3a57b847e488827bb8b3f09055f27e60bd` before this documentation update):
+
+- Endpoint: `https://testnet.lez.logos.co/`.
+- Working read schema: camelCase (`checkHealth`, `getProgramIds`, `getAccountsNonces`, `getAccount`, `getTransaction`). Snake_case methods returned `-32601 Method not found` during this run.
+- Submit method: `sendTransaction` exists (`sendTransaction(null)` returns `-32602 Invalid params`, expected string).
+- Preflight state: authority nonce `0`; mint PDA and holding PDA empty; candidate lifecycle hashes absent except deploy.
+- Program deploy: `sendTransaction` accepted the corrected `ProgramDeploymentTransaction` and returned / confirmed `5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0`.
+- First public lifecycle call: `create_mint` was rejected before program execution with JSON-RPC error `-32602 InvalidSignature` (expected candidate hash `3d8617cd607d179354894f2d6457a14c37cc0d0d95e028d9f8f47ad1e2ce6c37`). The guarded executor stopped there; no later lifecycle transactions were submitted.
+- Tracked reproducer: `scripts/lp0013-testnet-refresh-readiness.py` performs schema discovery/readiness checks in dry-run mode and only submits if invoked with both `--execute` and `LP0013_I_UNDERSTAND_PUBLIC_SEND=YES`.
+- Follow-up compatibility probe: built-in wallet public transactions (`wallet auth-transfer init`) fail with the same `InvalidSignature` on fresh accounts. That means current public testnet accepts deploy transactions but rejects public signed transactions from both the LP-0013 client path and the upstream wallet path.
+
+Conclusion: the reviewer-requested refresh was attempted and reached a precise upstream/tooling blocker. The current public testnet state is **not** a complete refreshed LP-0013 lifecycle. The June 4 lifecycle remains historical proof of the corrected guest, but should not be represented as current live re-query evidence after the reset. Fresh lifecycle hashes require Logos to restore public signed-transaction compatibility, or provide a currently matching wallet/client revision.
