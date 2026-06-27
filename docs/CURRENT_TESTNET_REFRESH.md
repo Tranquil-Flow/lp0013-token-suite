@@ -4,7 +4,7 @@ Reviewer request: refresh LP-0013 on-chain state after Logos reset `https://test
 
 ## Result
 
-Status: `blocked_upstream_public_signed_transactions`.
+Status: `blocked_current_public_testnet_lifecycle_reanchor`.
 
 The corrected program deployment transaction is accepted and confirmed, but the first public signed lifecycle transaction is rejected by the public sequencer with `InvalidSignature` before program execution. A built-in wallet public transaction (`wallet auth-transfer init`) fails with the same `InvalidSignature`, so this is not being claimed as an LP-0013 program bug or a completed re-anchor.
 
@@ -48,6 +48,26 @@ python3 scripts/lp0013-testnet-refresh-readiness.py --tx-json /path/to/lp0013_li
 LP0013_I_UNDERSTAND_PUBLIC_SEND=YES python3 scripts/lp0013-testnet-refresh-readiness.py --tx-json /path/to/lp0013_lifecycle_txs.json --execute
 ```
 
+
+## Additional compatibility investigation (2026-06-27)
+
+We continued root-cause work against the same public endpoint. Two important facts narrowed the blocker:
+
+1. A locally built Logos LEZ `lez-core-v0.2.0` wallet submitted a built-in `auth-transfer init` transaction that the public testnet included:
+   - tx: `63f03aeeac4e4ee6676b444b18a7415bf95e7331f671c4ac4a3221e12bf22fff`
+   - account checked afterward: `6HEYFUW4QbHPfdHTMPZLDeC6F5PL6suhSGJbTnsauhWJ` showed nonce `1`.
+2. Patching the rc3 client locally to match the newer LEZ public-message signature domain/prehash path changed LP-0013 lifecycle behavior from immediate `InvalidSignature` rejection to accepted submission hashes, but those custom-program calls still did not land in blocks or mutate state:
+   - `create_mint` with unfunded authority `yT4v...`: `1f88893bb842f0ba72150f693e2e4d6204a604aa3009fe19ba737b749c14b4ab`, not included after polling.
+   - `create_mint` with funded authority `6iArKUXxhUJqS7kCaPNhwMWt3ro71PDyBj7jwAyE2VQV`: `3160a1d6af85f97cf29610beefb466c1f9f905f7c33bf79ae06feec22902da97`, not included after polling.
+   - `create_holding` with funded authority: `7c2086485a26e89af30da570a7276639c877eedda3587e1746a02feb4326dd15`, not included after polling.
+
+This indicates at least two compatibility boundaries on the current public testnet:
+
+- rc3 raw Schnorr signing is stale for the current public verifier; newer LEZ uses a public-message domain/prehash path.
+- Even after locally adapting the signature path enough for `sendTransaction` to return hashes, LP-0013 custom-program lifecycle transactions still are not included, so the requested fresh full re-anchor remains incomplete.
+
+The exploratory client patch was intentionally not committed because it modifies vendored/cache dependency code rather than the LP-0013 repository. The dependency cache was restored and rechecked after the experiment.
+
 ## Reviewer-facing interpretation
 
-We attempted the requested re-deploy/re-anchor. The deploy half is refreshed, but the lifecycle half cannot be honestly claimed complete on current public testnet because public signed transactions are rejected before LP-0013 code executes. Until Logos restores matching wallet/sequencer public-signature compatibility, the June 4 corrected lifecycle remains historical evidence, not current live state.
+We attempted the requested re-deploy/re-anchor. The deploy half is refreshed, but the lifecycle half cannot be honestly claimed complete on current public testnet because the current public-testnet client/runtime path still does not include the LP-0013 custom-program lifecycle transactions. Until Logos confirms the current matching client/runtime path for custom public program calls, or the public testnet includes these transactions, the June 4 corrected lifecycle remains historical evidence, not current live state.
