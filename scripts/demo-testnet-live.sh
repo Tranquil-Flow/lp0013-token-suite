@@ -24,9 +24,9 @@
 #   bash scripts/demo-testnet-live.sh verify
 #   MODE=full bash scripts/demo-testnet-live.sh  # see full-mode instructions
 #
-# The `wallet` binary must be built from LEZ tag v0.1.2 (the public testnet's version):
+# The `wallet` binary must be built from LEZ v0.2.0 (the public testnet's version):
 #   git clone https://github.com/logos-blockchain/logos-execution-zone && cd logos-execution-zone
-#   git checkout tags/v0.1.2
+#   git checkout tags/v0.2.0
 #   PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 cargo install --path wallet --force
 
 set -euo pipefail
@@ -35,29 +35,29 @@ BOLD='\033[1m'; DIM='\033[2m'; GREEN='\033[32m'; CYAN='\033[36m'; YELLOW='\033[3
 
 MODE="${1:-${MODE:-verify}}"
 
-# ---- Canonical public-testnet evidence (2026-06-04, corrected four-instruction guest) ----
+# ---- Canonical public-testnet evidence (2026-06-27, corrected four-instruction guest) ----
 # Deployed + exercised on the public LEZ testnet with create_holding + mutable mint_to.
 # Two accumulating mints (60+40 -> 100) prove variable supply works on chain. After
 # authority revocation, the post-revoke mint is rejected and the final mint state remains
 # authority=None, supply=100. In LEZ a program is content-addressed, so ProgramId ==
 # ImageID; base58 form of the program (as `program_owner` on its PDAs / in the explorer):
-# 4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF
+# 4UARaVcJJoLxebFAobocsZyzpJ5TTUvvhRtFuHtuHypd
 SEQ_ADDR="https://testnet.lez.logos.co/"
-PROGRAM_ID="32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce"
-IMAGE_ID="32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce"
-MINT_PDA="HtCYkKN5K3dUVnPhJ4tCNpvDrnEcLZKgh8i4PkUjigfu"
-AUTHORITY="B6Sa77taeQgQ3FXHP88wjs15sJw3EyfcRjnSAZKnYchb"
-RECIPIENT="4yswbZaRR1HQt4a5HS4uN7nLvAwL1txHTMSXKo1WZH2S"
+PROGRAM_ID="338865e9549b18fb736020eaef87d5e20075b4250e10c00e08ea918c4871554a"
+IMAGE_ID="338865e9549b18fb736020eaef87d5e20075b4250e10c00e08ea918c4871554a"
+MINT_PDA="4gMBXeUskbUTzxoP8fJJEXj3jxTQz91m6ZW7fMsLMJq6"
+AUTHORITY="6HEYFUW4QbHPfdHTMPZLDeC6F5PL6suhSGJbTnsauhWJ"
+RECIPIENT="366n7Nj21EzD27BXRKE2hFDWPtJ1E2Fcx9RmqQoGRD7h"
 
 # step label | tx hash | expected verdict
 TXS=(
-  "deploy_program|5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0|Some(ProgramDeployment)"
-  "create_mint|7d1dcb04b5f339b33f04a120b7334cf9802720d4a917e600becd62476e44da74|Some(Public)"
-  "create_holding|520d080b833c7e4038a1aa214bba43a3fc97328e8f379a093b74ca3e32be5893|Some(Public)"
-  "mint_to(60)|8c865d0184f55ce5a881e24c8c125cd3729c5f90a4b83d0484c8d1610f743f61|Some(Public)"
-  "mint_to(40)|c63168b7f615221ab2425b2ba003d32183f4df2e482eb4203e4e216675993d21|Some(Public)"
-  "set_mint_authority(None)|8c4b08b5c750c57d0dbb4e9f43c32b7c0f2627ce5508da85408e3aaf01f5a331|Some(Public)"
-  "mint_to(post-revoke)|6e92e605e932756332c9721a4e4754f155780069490b256fe67b35f374a972d1|None (rejected)"
+  "deploy_program|793992258d88e69c63cbede6fabec3ff5768d84d824d7ee9f3170f85fb717dce|Some(ProgramDeployment)"
+  "create_mint|55908821088c98e898c4ef99e9a36e02856092f7afd0155f3457c25c5cf67746|Some(Public)"
+  "create_holding|8a37a8fb7200856c57d199ce081f2b744ed3cbaeec8326c83092f5ca05ac668f|Some(Public)"
+  "mint_to(60)|daf5aa91f35dff8250794c0dcfe932de473c651bd25c946d76f09a42cfdb6a97|Some(Public)"
+  "mint_to(40)|ed07b29c004a796d504814ddf1a9a0cfda373d1618398b620e330ccb529b3cce|Some(Public)"
+  "set_mint_authority(None)|719123f918df2aee42c4e69d36ba8860807b2a69c97a2927097d8313a508550e|Some(Public)"
+  "mint_to(post-revoke)|016043771c0cc60efaf158ec120a9bf341326967c881285878469503ddd3d4fa|None (rejected)"
 )
 
 export PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
@@ -147,8 +147,12 @@ verify_mode() {
     if python3 - "$data_hex" <<'PY'
 import sys
 raw = bytes.fromhex(sys.argv[1])
-atype = raw[0]; opt = raw[1]
-supply = int.from_bytes(raw[2:18], "little"); decimals = raw[18]
+if len(raw) >= 19:
+    atype = raw[0]; opt = raw[1]
+    supply = int.from_bytes(raw[2:18], "little"); decimals = raw[18]
+else:
+    atype = 0; opt = raw[0]
+    supply = int.from_bytes(raw[1:17], "little"); decimals = raw[17]
 auth = "None" if opt == 0 else "Some(...)"
 print(f"  decoded MintDefinition: authority_type={atype}  current_authority={auth}  supply={supply}  decimals={decimals}")
 ok = (opt == 0 and supply == 100 and decimals == 6)
@@ -167,7 +171,7 @@ PY
     echo "  Full proof log: docs/LEZ_PROOF_LOG.md"
   else
     echo -e "${BOLD}${RED}  ✗ One or more checks did not match.${RESET}"
-    echo "  Note: the public testnet may have been reset since 2026-06-04; see docs/LEZ_PROOF_LOG.md."
+    echo "  Note: the public testnet may have been reset since 2026-06-27; see docs/LEZ_PROOF_LOG.md."
     exit 1
   fi
 }
@@ -182,9 +186,9 @@ full_mode() {
   same way, so do not treat full mode as currently able to refresh the lifecycle
   until Logos restores wallet/sequencer public-signature compatibility.
 
-  1) Build the rc3 / testnet-matching guest (docker required for cargo risczero):
+  1) Build the v0.2.0 / current testnet-matching guest (docker required for cargo risczero):
        see docs/LEZ_PROOF_LOG.md "Version-pin landmine" — pin spel/spel-framework to
-       rev 31e52c52 and nssa* to tag v0.2.0-rc3, then:
+       rev 31e52c52 and nssa* to tag v0.2.0, then:
        PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 \\
          cargo risczero build --manifest-path methods/guest/Cargo.toml
 

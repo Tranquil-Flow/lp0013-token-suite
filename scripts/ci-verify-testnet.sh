@@ -2,22 +2,23 @@
 # scripts/ci-verify-testnet.sh — wallet-free public LEZ testnet verifier for LP-0013.
 #
 # Read-only, no keys, no wallet build, no localnet, no mock. Re-queries the
-# corrected 2026-06-04 authority lifecycle and the final mint PDA state from
+# current 2026-06-27 v0.2.0 authority lifecycle and final account state from
 # https://testnet.lez.logos.co/ using JSON-RPC only.
 set -euo pipefail
 
 SEQ="${LP0013_SEQUENCER:-https://testnet.lez.logos.co/}"
-PROGRAM_ID="32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce"
-MINT_PDA="HtCYkKN5K3dUVnPhJ4tCNpvDrnEcLZKgh8i4PkUjigfu"
+PROGRAM_ID="338865e9549b18fb736020eaef87d5e20075b4250e10c00e08ea918c4871554a"
+MINT_PDA="4gMBXeUskbUTzxoP8fJJEXj3jxTQz91m6ZW7fMsLMJq6"
+HOLDING_PDA="366n7Nj21EzD27BXRKE2hFDWPtJ1E2Fcx9RmqQoGRD7h"
 
 TXS=(
-  "deploy_program|5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0|present"
-  "create_mint|7d1dcb04b5f339b33f04a120b7334cf9802720d4a917e600becd62476e44da74|present"
-  "create_holding|520d080b833c7e4038a1aa214bba43a3fc97328e8f379a093b74ca3e32be5893|present"
-  "mint_to(60)|8c865d0184f55ce5a881e24c8c125cd3729c5f90a4b83d0484c8d1610f743f61|present"
-  "mint_to(40)|c63168b7f615221ab2425b2ba003d32183f4df2e482eb4203e4e216675993d21|present"
-  "set_mint_authority(None)|8c4b08b5c750c57d0dbb4e9f43c32b7c0f2627ce5508da85408e3aaf01f5a331|present"
-  "mint_to(post-revoke)|6e92e605e932756332c9721a4e4754f155780069490b256fe67b35f374a972d1|null"
+  "deploy_program|793992258d88e69c63cbede6fabec3ff5768d84d824d7ee9f3170f85fb717dce|present"
+  "create_mint|55908821088c98e898c4ef99e9a36e02856092f7afd0155f3457c25c5cf67746|present"
+  "create_holding|8a37a8fb7200856c57d199ce081f2b744ed3cbaeec8326c83092f5ca05ac668f|present"
+  "mint_to(60)|daf5aa91f35dff8250794c0dcfe932de473c651bd25c946d76f09a42cfdb6a97|present"
+  "mint_to(40)|ed07b29c004a796d504814ddf1a9a0cfda373d1618398b620e330ccb529b3cce|present"
+  "set_mint_authority(None)|719123f918df2aee42c4e69d36ba8860807b2a69c97a2927097d8313a508550e|present"
+  "mint_to(post-revoke)|016043771c0cc60efaf158ec120a9bf341326967c881285878469503ddd3d4fa|null"
 )
 
 rpc() {
@@ -33,19 +34,7 @@ tmpdir="$(mktemp -d -t lp0013-ci-verify-XXXX)"
 trap 'rm -rf "$tmpdir"' EXIT
 for entry in "${TXS[@]}"; do
   IFS='|' read -r label hash expected <<< "$entry"
-  resp="$(rpc get_transaction_by_hash "[\"$hash\"]" || true)"
-  if python3 - <<'PY' "$resp" >/dev/null 2>&1
-import json, sys
-try:
-    data=json.loads(sys.argv[1])
-except Exception:
-    sys.exit(1)
-err=data.get('error')
-sys.exit(0 if isinstance(err, dict) and err.get('code') == -32601 else 1)
-PY
-  then
-    resp="$(rpc getTransaction "[\"$hash\"]" || true)"
-  fi
+  resp="$(rpc getTransaction "[\"$hash\"]" || true)"
   resp_file="$tmpdir/tx-${hash}.json"
   printf '%s' "$resp" > "$resp_file"
   if python3 - "$expected" "$resp_file" <<'PY' 2>/dev/null
@@ -56,12 +45,7 @@ try:
     result = json.load(open(path, "r", encoding="utf-8")).get("result")
 except Exception:
     sys.exit(1)
-if isinstance(result, dict) and "transaction" in result:
-    result = result.get("transaction")
-if expected == "present":
-    ok = result is not None and (not isinstance(result, str) or len(result) > 0)
-else:
-    ok = result is None
+ok = (isinstance(result, str) and len(result) > 0) if expected == "present" else (result is None)
 sys.exit(0 if ok else 1)
 PY
   then
@@ -73,20 +57,8 @@ PY
 done
 
 echo "Verifying final mint PDA state"
-acct_resp="$(rpc get_account "[\"$MINT_PDA\"]" || true)"
-if python3 - <<'PY' "$acct_resp" >/dev/null 2>&1
-import json, sys
-try:
-    data=json.loads(sys.argv[1])
-except Exception:
-    sys.exit(1)
-err=data.get('error')
-sys.exit(0 if isinstance(err, dict) and err.get('code') == -32601 else 1)
-PY
-then
-  acct_resp="$(rpc getAccount "[\"$MINT_PDA\"]" || true)"
-fi
-acct_file="$tmpdir/account.json"
+acct_resp="$(rpc getAccount "[\"$MINT_PDA\"]" || true)"
+acct_file="$tmpdir/mint.json"
 printf '%s' "$acct_resp" > "$acct_file"
 if python3 - "$MINT_PDA" "$acct_file" <<'PY'
 import json, sys
@@ -94,8 +66,6 @@ pda = sys.argv[1]
 path = sys.argv[2]
 resp = json.load(open(path, "r", encoding="utf-8"))
 result = resp.get("result")
-if isinstance(result, dict) and "account" in result:
-    result = result.get("account")
 if not isinstance(result, dict):
     print(f"  FAIL {pda}: missing account result -> {resp}")
     sys.exit(1)
@@ -104,19 +74,58 @@ if not isinstance(data, list):
     print(f"  FAIL {pda}: missing byte-array data -> {result}")
     sys.exit(1)
 raw = bytes(data)
-if len(raw) < 19:
+if len(raw) >= 19:
+    authority_type = raw[0]
+    authority_option = raw[1]
+    supply = int.from_bytes(raw[2:18], "little")
+    decimals = raw[18]
+elif len(raw) == 18:
+    authority_type = 0
+    authority_option = raw[0]
+    supply = int.from_bytes(raw[1:17], "little")
+    decimals = raw[17]
+else:
     print(f"  FAIL {pda}: data too short ({len(raw)})")
     sys.exit(1)
-authority_type = raw[0]
-authority_option = raw[1]
-supply = int.from_bytes(raw[2:18], "little")
-decimals = raw[18]
 print(f"  mint_pda={pda}")
 print(f"  decoded MintDefinition: authority_type={authority_type} current_authority={'None' if authority_option == 0 else 'Some(...)'} supply={supply} decimals={decimals}")
 if authority_option == 0 and supply == 100 and decimals == 6:
     print("  ok   revocation invariant holds: authority=None, supply=100, decimals=6")
 else:
     print("  FAIL unexpected mint state")
+    sys.exit(1)
+PY
+then
+  :
+else
+  fail=1
+fi
+
+echo "Verifying final holding PDA state"
+holding_resp="$(rpc getAccount "[\"$HOLDING_PDA\"]" || true)"
+holding_file="$tmpdir/holding.json"
+printf '%s' "$holding_resp" > "$holding_file"
+if python3 - "$HOLDING_PDA" "$holding_file" <<'PY'
+import json, sys
+pda = sys.argv[1]
+path = sys.argv[2]
+resp = json.load(open(path, "r", encoding="utf-8"))
+result = resp.get("result")
+if not isinstance(result, dict):
+    print(f"  FAIL {pda}: missing account result -> {resp}")
+    sys.exit(1)
+data = result.get("data")
+if not isinstance(data, list) or len(data) < 48:
+    print(f"  FAIL {pda}: missing/short holding data -> {result}")
+    sys.exit(1)
+raw = bytes(data)
+balance = int.from_bytes(raw[32:48], "little")
+print(f"  holding_pda={pda}")
+print(f"  decoded TokenHolding: balance={balance}")
+if balance == 100:
+    print("  ok   holding balance invariant holds: balance=100")
+else:
+    print("  FAIL unexpected holding balance")
     sys.exit(1)
 PY
 then

@@ -1,73 +1,56 @@
-# LP-0013 current public-testnet refresh evidence (2026-06-26)
+# LP-0013 current public-testnet refresh — 2026-06-27
 
-Reviewer request: refresh LP-0013 on-chain state after Logos reset `https://testnet.lez.logos.co/`.
+This is the current load-bearing public LEZ evidence for LP-0013 after the public testnet/client drift discovered during resubmission prep. Older 2026-06-03 and 2026-06-04 hashes are retained in `docs/LEZ_PROOF_LOG.md` as historical context only.
 
-## Result
+## Network and client
 
-Status: `blocked_current_public_testnet_lifecycle_reanchor`.
+- Network: `https://testnet.lez.logos.co/`
+- JSON-RPC method shape: camelCase (`getTransaction`, `getAccount`)
+- Client/signing path used for fresh lifecycle: LEZ v0.2.0 wallet / `WalletCore` public transaction path
+- Program artifact: release RISC Zero guest ELF wrapped as `risc0_binfmt::ProgramBinary`
+- ProgramBinary SHA-256: `fac6f9715efc03edcb695dc71545cb24fac6bc86530644e2748f50d6ef9009f3`
 
-The corrected program deployment transaction is accepted and confirmed, but the first public signed lifecycle transaction is rejected by the public sequencer with `InvalidSignature` before program execution. A built-in wallet public transaction (`wallet auth-transfer init`) fails with the same `InvalidSignature`, so this is not being claimed as an LP-0013 program bug or a completed re-anchor.
+## Program and accounts
 
-## Fresh attempt details
+- ProgramId words: `[3915745331, 4212693844, 3927990387, 3805644783, 632583424, 247468046, 2358372872, 1247113544]`
+- ProgramId / ImageID bytes: `338865e9549b18fb736020eaef87d5e20075b4250e10c00e08ea918c4871554a`
+- Explorer-form base58 ProgramId: `4UARaVcJJoLxebFAobocsZyzpJ5TTUvvhRtFuHtuHypd`
+- Authority: `6HEYFUW4QbHPfdHTMPZLDeC6F5PL6suhSGJbTnsauhWJ`
+- Mint PDA: `4gMBXeUskbUTzxoP8fJJEXj3jxTQz91m6ZW7fMsLMJq6`
+- Holding PDA: `366n7Nj21EzD27BXRKE2hFDWPtJ1E2Fcx9RmqQoGRD7h`
 
-- Time: 2026-06-26 21:16 UTC.
-- Endpoint: `https://testnet.lez.logos.co/`.
-- Repo SHA before this doc update: `2a44aa3a57b847e488827bb8b3f09055f27e60bd`.
-- Read schema: camelCase (`checkHealth`, `getProgramIds`, `getAccountsNonces`, `getAccount`, `getTransaction`).
-- Submit method: `sendTransaction`.
-- Authority: `yT4vNzPFFH4FyG4NH886YChds7EfpEaRaV1jvqZ6Rx3`.
-- Authority nonce: `0`.
-- Mint PDA: `HtCYkKN5K3dUVnPhJ4tCNpvDrnEcLZKgh8i4PkUjigfu` (empty before attempt).
-- Holding PDA: `4yswbZaRR1HQt4a5HS4uN7nLvAwL1txHTMSXKo1WZH2S` (empty before attempt).
+## Included lifecycle transactions
 
-## Transaction outcomes
-
-| Step | Expected hash | Current outcome |
+| Step | Transaction hash | Verdict |
 |---|---|---|
-| deploy_program | `5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0` | confirmed `Some(ProgramDeployment)` |
-| create_mint | `3d8617cd607d179354894f2d6457a14c37cc0d0d95e028d9f8f47ad1e2ce6c37` | `sendTransaction` failed: `-32602 InvalidSignature` |
-| create_holding | `8f2ab1994c51294a5b058cc319f4fc452448d625d6db01edcf33edc5a19bcb08` | not submitted after fail-closed stop |
-| mint_to_60 | `14aed66e75ee6bbdd414876b1519d48e628fd90b0b107b1ce819bdeb8294530e` | not submitted after fail-closed stop |
-| mint_to_40 | `0d5f857cf425c84e588e4a3b2c165f80aa36d255037e6fc0f3897c18278c39ce` | not submitted after fail-closed stop |
-| set_mint_authority_none | `6620fe74806817f553d6519d4d068e12609886e92d8f2f3ca5a99314a23f16fa` | not submitted after fail-closed stop |
-| mint_to_post_revoke | `2036547e1b162c5812a61e0b641295d5e5a6e125f58da66d6489414d1df03136` | not submitted after fail-closed stop |
+| deploy_program | `793992258d88e69c63cbede6fabec3ff5768d84d824d7ee9f3170f85fb717dce` | included as `ProgramDeployment` |
+| create_mint | `55908821088c98e898c4ef99e9a36e02856092f7afd0155f3457c25c5cf67746` | included as `Public` |
+| create_holding | `8a37a8fb7200856c57d199ce081f2b744ed3cbaeec8326c83092f5ca05ac668f` | included as `Public` |
+| mint_to(60) | `daf5aa91f35dff8250794c0dcfe932de473c651bd25c946d76f09a42cfdb6a97` | included as `Public` |
+| mint_to(40) | `ed07b29c004a796d504814ddf1a9a0cfda373d1618398b620e330ccb529b3cce` | included as `Public` |
+| set_mint_authority(None) | `719123f918df2aee42c4e69d36ba8860807b2a69c97a2927097d8313a508550e` | included as `Public` |
+| mint_to(post-revoke) | `016043771c0cc60efaf158ec120a9bf341326967c881285878469503ddd3d4fa` | not included, as expected |
 
+## Final state readback
 
-## Reproduction commands
+- Mint state: `authority=None`, `supply=100`, `decimals=6`
+- Holding state: `balance=100`
+- Result: post-revoke mint did not land; fixed-supply invariant held.
 
-Read-only current-state verification from a clean clone:
+## Re-verification
+
+Run from the implementation repository:
 
 ```bash
-LP0013_FORCE_CURL_VERIFY=1 bash scripts/demo-testnet-live.sh verify
+bash scripts/demo-testnet-live.sh verify
+# or the curl-only CI verifier:
+bash scripts/ci-verify-testnet.sh
 ```
 
-Schema/readiness probing and guarded submission use the tracked helper below. It expects a lifecycle transaction artifact generated by the LP-0013 lifecycle client (for the 2026-06-26 attempt this was `/tmp/lp0013_lifecycle_txs.json` on the prepared M4 host). Default mode performs no sends; execution mode requires both `--execute` and `LP0013_I_UNDERSTAND_PUBLIC_SEND=YES`.
+Both scripts are read-only. They query the public sequencer and fail closed if the public testnet resets again or if final state no longer matches the recorded lifecycle.
 
-```bash
-python3 scripts/lp0013-testnet-refresh-readiness.py --tx-json /path/to/lp0013_lifecycle_txs.json
-LP0013_I_UNDERSTAND_PUBLIC_SEND=YES python3 scripts/lp0013-testnet-refresh-readiness.py --tx-json /path/to/lp0013_lifecycle_txs.json --execute
-```
+## Root-cause notes for evaluator trust
 
-
-## Additional compatibility investigation (2026-06-27)
-
-We continued root-cause work against the same public endpoint. Two important facts narrowed the blocker:
-
-1. A locally built Logos LEZ `lez-core-v0.2.0` wallet submitted a built-in `auth-transfer init` transaction that the public testnet included:
-   - tx: `63f03aeeac4e4ee6676b444b18a7415bf95e7331f671c4ac4a3221e12bf22fff`
-   - account checked afterward: `6HEYFUW4QbHPfdHTMPZLDeC6F5PL6suhSGJbTnsauhWJ` showed nonce `1`.
-2. Patching the rc3 client locally to match the newer LEZ public-message signature domain/prehash path changed LP-0013 lifecycle behavior from immediate `InvalidSignature` rejection to accepted submission hashes, but those custom-program calls still did not land in blocks or mutate state:
-   - `create_mint` with unfunded authority `yT4v...`: `1f88893bb842f0ba72150f693e2e4d6204a604aa3009fe19ba737b749c14b4ab`, not included after polling.
-   - `create_mint` with funded authority `6iArKUXxhUJqS7kCaPNhwMWt3ro71PDyBj7jwAyE2VQV`: `3160a1d6af85f97cf29610beefb466c1f9f905f7c33bf79ae06feec22902da97`, not included after polling.
-   - `create_holding` with funded authority: `7c2086485a26e89af30da570a7276639c877eedda3587e1746a02feb4326dd15`, not included after polling.
-
-This indicates at least two compatibility boundaries on the current public testnet:
-
-- rc3 raw Schnorr signing is stale for the current public verifier; newer LEZ uses a public-message domain/prehash path.
-- Even after locally adapting the signature path enough for `sendTransaction` to return hashes, LP-0013 custom-program lifecycle transactions still are not included, so the requested fresh full re-anchor remains incomplete.
-
-The exploratory client patch was intentionally not committed because it modifies vendored/cache dependency code rather than the LP-0013 repository. The dependency cache was restored and rechecked after the experiment.
-
-## Reviewer-facing interpretation
-
-We attempted the requested re-deploy/re-anchor. The deploy half is refreshed, but the lifecycle half cannot be honestly claimed complete on current public testnet because the current public-testnet client/runtime path still does not include the LP-0013 custom-program lifecycle transactions. Until Logos confirms the current matching client/runtime path for custom public program calls, or the public testnet includes these transactions, the June 4 corrected lifecycle remains historical evidence, not current live state.
+- The rc3 wallet path could submit deployments but produced `InvalidSignature` for current-testnet custom `PublicTransaction` calls. The v0.2.0 wallet path signs them correctly.
+- LEZ expects a RISC Zero `ProgramBinary`, not a raw RISC-V ELF. Raw/debug ELF attempts produced `InvalidProgramBytecode(Malformed ProgramBinary)` or oversized payloads.
+- The current successful path used a release guest ELF wrapped as `ProgramBinary`; all lifecycle transactions were included and final account state was read back.

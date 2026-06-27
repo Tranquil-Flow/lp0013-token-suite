@@ -82,7 +82,7 @@ SPEL_STATUS_REQUIRED_PHRASES = [
     "admin-authority.idl.spel-generated.json",
     "hand-written",
     # rc3 / public-testnet regeneration
-    "v0.2.0-rc3",
+    "v0.2.0",
     "admin-authority.idl.spel-generated.rc3-testnet.json",
     "31e52c52",
 ]
@@ -113,24 +113,24 @@ LEZ_PROOF_LOG_REQUIRED_PHRASES = [
     "Program error 2008: authority has been revoked",
     # public testnet deploy + lifecycle (2026-06-03) — pre-fix run (superseded; hashes retained as history)
     "https://testnet.lez.logos.co/",
-    "v0.2.0-rc3",
+    "v0.2.0",
     "59e15341b10dfacf6bfeb8436f587e18fb4bf714fc042c79aba9f8878fb0ae2c",
     "07561014a617dc18c3a420db01c9f752755053eb58f44d8db98871646cb968ba",
     "17d90ea633db426a863efc697239aa158293c20822ff07839a2a0b6f2eeb37d2",
     "be393bcf82e489bc5a940904ed0e38ea861b61939f43529132ca4c701f29bbd8",
     "0540648f9f5099296340bcf65d0ac1a4cf89ff226eca7abb27dcdcb0b29f5784",
     "312ea9f120602f9aa2d574d43fefa73ae25d74e1bd228b9f65317fef8fef4798",
-    # public testnet deploy + lifecycle (2026-06-04) — CORRECTED guest (load-bearing evidence)
-    "32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce",
-    "4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF",
-    "HtCYkKN5K3dUVnPhJ4tCNpvDrnEcLZKgh8i4PkUjigfu",
-    "5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0",
-    "7d1dcb04b5f339b33f04a120b7334cf9802720d4a917e600becd62476e44da74",
-    "520d080b833c7e4038a1aa214bba43a3fc97328e8f379a093b74ca3e32be5893",
-    "8c865d0184f55ce5a881e24c8c125cd3729c5f90a4b83d0484c8d1610f743f61",
-    "c63168b7f615221ab2425b2ba003d32183f4df2e482eb4203e4e216675993d21",
-    "8c4b08b5c750c57d0dbb4e9f43c32b7c0f2627ce5508da85408e3aaf01f5a331",
-    "6e92e605e932756332c9721a4e4754f155780069490b256fe67b35f374a972d1",
+    # public testnet deploy + lifecycle (2026-06-27) — CORRECTED guest (load-bearing evidence)
+    "338865e9549b18fb736020eaef87d5e20075b4250e10c00e08ea918c4871554a",
+    "4UARaVcJJoLxebFAobocsZyzpJ5TTUvvhRtFuHtuHypd",
+    "4gMBXeUskbUTzxoP8fJJEXj3jxTQz91m6ZW7fMsLMJq6",
+    "793992258d88e69c63cbede6fabec3ff5768d84d824d7ee9f3170f85fb717dce",
+    "55908821088c98e898c4ef99e9a36e02856092f7afd0155f3457c25c5cf67746",
+    "8a37a8fb7200856c57d199ce081f2b744ed3cbaeec8326c83092f5ca05ac668f",
+    "daf5aa91f35dff8250794c0dcfe932de473c651bd25c946d76f09a42cfdb6a97",
+    "ed07b29c004a796d504814ddf1a9a0cfda373d1618398b620e330ccb529b3cce",
+    "719123f918df2aee42c4e69d36ba8860807b2a69c97a2927097d8313a508550e",
+    "016043771c0cc60efaf158ec120a9bf341326967c881285878469503ddd3d4fa",
 ]
 
 HOST_TOOLCHAIN_REQUIRED_PHRASES = [
@@ -156,9 +156,9 @@ SUBMISSION_REQUIRED_PHRASES = [
 SOLUTION_REQUIRED_PHRASES = [
     "LP-0013",
     "Tranquil-Flow/lp0013-token-suite",
-    "32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce",
-    "5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0",
-    "6e92e605e932756332c9721a4e4754f155780069490b256fe67b35f374a972d1",
+    "338865e9549b18fb736020eaef87d5e20075b4250e10c00e08ea918c4871554a",
+    "793992258d88e69c63cbede6fabec3ff5768d84d824d7ee9f3170f85fb717dce",
+    "016043771c0cc60efaf158ec120a9bf341326967c881285878469503ddd3d4fa",
     "scripts/demo-testnet-live.sh verify",
     "Recorded narrated demo video",
     "https://youtu.be/rUgsCCPiQfo",
@@ -262,7 +262,7 @@ def validate_spel_generated_idl() -> None:
 
 
 def validate_spel_generated_rc3_idl() -> None:
-    """The rc3 / testnet-matching generation must emit the full account bodies.
+    """The v0.2.0 / current testnet-matching generation must emit the full account bodies.
     Under the corrected guest (which annotates #[account_type]) this generation
     is byte-identical to the rc1 generation — a cross-revision stability check,
     not a richer artifact — but both must still carry the account bodies."""

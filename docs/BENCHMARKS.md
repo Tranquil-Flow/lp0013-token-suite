@@ -1,8 +1,8 @@
 # LP-0013 Benchmarks
 
-> **Note (2026-06-04) — corrected guest deployed; CU numbers below are pre-fix localnet, methodology unchanged.** The corrected four-instruction guest is now deployed + verified on the public testnet (ProgramId/ImageID `32335764…b0a9ce`; see `docs/LEZ_PROOF_LOG.md`), but the **public testnet exposes no per-tx CU** — per-operation executor time is observable only on a local sequencer whose log you control. The CU numbers below are therefore single-run measurements from the **pre-fix** semantic guest's localnet sessions (2026-05). The CU *methodology* (deterministic deployed-ELF executor cycles) is unchanged for the corrected guest; re-measuring the corrected four-op profile on a local sequencer is a documented follow-up (non-blocking). Being single-run private-node CU, any such number carries the same caveat the reviewer raised on point #4 — which is inherent to a public testnet that hides per-tx CU, not something a re-run resolves. Authoritative state → [`../RESUBMISSION_STATUS.md`](../RESUBMISSION_STATUS.md).
+> **Note (2026-06-27) — corrected guest deployed; CU numbers below are pre-fix localnet, methodology unchanged.** The corrected four-instruction guest is now deployed + verified on the public testnet (ProgramId/ImageID `32335764…b0a9ce`; see `docs/LEZ_PROOF_LOG.md`), but the **public testnet exposes no per-tx CU** — per-operation executor time is observable only on a local sequencer whose log you control. The CU numbers below are therefore single-run measurements from the **pre-fix** semantic guest's localnet sessions (2026-05). The CU *methodology* (deterministic deployed-ELF executor cycles) is unchanged for the corrected guest; re-measuring the corrected four-op profile on a local sequencer is a documented follow-up (non-blocking). Being single-run private-node CU, any such number carries the same caveat the reviewer raised on point #4 — which is inherent to a public testnet that hides per-tx CU, not something a re-run resolves. Authoritative state → [`../RESUBMISSION_STATUS.md`](../RESUBMISSION_STATUS.md).
 
-The corrected lifecycle (2026-06-04, `testnet.lez.logos.co`, `RISC0_DEV_MODE=0`; see `docs/LEZ_PROOF_LOG.md`) is the load-bearing on-chain evidence, but it yields no per-tx CU — the **compute-unit (CU) profile** must be measured on a local sequencer, because the public testnet does not expose its sequencer executor logs and the per-operation `risc0_zkvm` executor times the LP-0013 spec asks for can only be read off a sequencer whose log you control. The CU numbers below are from the 2026-05-17/05-18 local spikes of the **pre-fix** semantic guest (single `mint_to`); the **CU methodology stands** and is unchanged for the corrected four-instruction guest (`create_mint`, `create_holding`, `mint_to`, `set_mint_authority`) — `create_holding` would add one PDA-claim cost and `mint_to` would shed its holding-claim cost, but the per-op shape (and the ~50%-cheaper rejected-op profile) is expected to hold. Values are honest single-run numbers from the proof sessions documented in `docs/LEZ_PROOF_LOG.md`; statistical analysis is out of scope for this submission.
+The corrected lifecycle (2026-06-27, `testnet.lez.logos.co`, `RISC0_DEV_MODE=0`; see `docs/LEZ_PROOF_LOG.md`) is the load-bearing on-chain evidence, but it yields no per-tx CU — the **compute-unit (CU) profile** must be measured on a local sequencer, because the public testnet does not expose its sequencer executor logs and the per-operation `risc0_zkvm` executor times the LP-0013 spec asks for can only be read off a sequencer whose log you control. The CU numbers below are from the 2026-05-17/05-18 local spikes of the **pre-fix** semantic guest (single `mint_to`); the **CU methodology stands** and is unchanged for the corrected four-instruction guest (`create_mint`, `create_holding`, `mint_to`, `set_mint_authority`) — `create_holding` would add one PDA-claim cost and `mint_to` would shed its holding-claim cost, but the per-op shape (and the ~50%-cheaper rejected-op profile) is expected to hold. Values are honest single-run numbers from the proof sessions documented in `docs/LEZ_PROOF_LOG.md`; statistical analysis is out of scope for this submission.
 
 ## Host
 
@@ -81,7 +81,7 @@ Notable: SPEL `v0.2.0-rc.3` did **not** trigger the LP-0017 cc-rs / ring guest-d
 
 ## Public testnet lifecycle (2026-06-03) — SUPERSEDED (pre-fix guest)
 
-Built against the testnet's rc3 pins (`v0.2.0-rc3` = `cf3639d8`), ImageID `59e15341…fb0ae2c`, ProgramId `4153e159…2caeb08f`, on `https://testnet.lez.logos.co/` under real consensus and `RISC0_DEV_MODE=0`.
+Built against the testnet's rc3 pins (`v0.2.0` = `cf3639d8`), ImageID `59e15341…fb0ae2c`, ProgramId `4153e159…2caeb08f`, on `https://testnet.lez.logos.co/` under real consensus and `RISC0_DEV_MODE=0`.
 
 | step | tx hash | result |
 | --- | --- | --- |
@@ -97,7 +97,7 @@ Historical-only verification command for the superseded run (do not use as final
 submission evidence):
 
 ```bash
-# The live verify script now checks the corrected 2026-06-04 run. Use archived
+# The live verify script now checks the corrected 2026-06-27 run. Use archived
 # wallet queries from this section only if you intentionally need the old PDA.
 bash scripts/demo-testnet-live.sh verify
 ```
@@ -168,7 +168,7 @@ In the original 2026-05-17 structural-surface spike, `supply` stayed at 0 and `c
 
 ## Compute units (CU)
 
-> **⚠️ Superseded numbers (2026-06-04).** The table below is from the **pre-fix** guest, in which `mint_to` claimed the holding via `init` on first use. The corrected guest splits that into a separate `create_holding` instruction, so (a) the operation set to measure is now four ops — `create_mint`, `create_holding`, `mint_to`, `set_mint_authority` — and (b) `mint_to`'s cost no longer includes a holding-PDA claim. The **methodology below is unchanged**; the corrected four-op numbers would be re-captured on a local sequencer (a documented, non-blocking follow-up — the public testnet, where the corrected guest is deployed, exposes no per-tx CU). The qualitative finding — rejected operations cost ~50% less because the guard halts before any account write — is expected to hold.
+> **⚠️ Superseded numbers (2026-06-27).** The table below is from the **pre-fix** guest, in which `mint_to` claimed the holding via `init` on first use. The corrected guest splits that into a separate `create_holding` instruction, so (a) the operation set to measure is now four ops — `create_mint`, `create_holding`, `mint_to`, `set_mint_authority` — and (b) `mint_to`'s cost no longer includes a holding-PDA claim. The **methodology below is unchanged**; the corrected four-op numbers would be re-captured on a local sequencer (a documented, non-blocking follow-up — the public testnet, where the corrected guest is deployed, exposes no per-tx CU). The qualitative finding — rejected operations cost ~50% less because the guard halts before any account write — is expected to hold.
 
 LP-0013 spec line: *"Document the compute unit (CU) cost of each new operation (mint, rotate authority, revoke authority) on LEZ devnet/testnet."*
 

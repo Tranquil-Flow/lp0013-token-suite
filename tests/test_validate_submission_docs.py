@@ -132,18 +132,18 @@ class SubmissionValidatorTests(unittest.TestCase):
     def test_corrected_guest_validator_tracks_all_testnet_hashes(self):
         validator = VALIDATOR.read_text()
         for token in [
-            # public testnet deploy + lifecycle (2026-06-04) — CORRECTED guest
+            # public testnet deploy + lifecycle (2026-06-27) — CORRECTED guest
             # (load-bearing on-chain evidence of the fix)
-            "32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce",  # ImageID == ProgramId
-            "4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF",                       # program (base58)
-            "HtCYkKN5K3dUVnPhJ4tCNpvDrnEcLZKgh8i4PkUjigfu",                       # mint PDA
-            "5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0",  # deploy
-            "7d1dcb04b5f339b33f04a120b7334cf9802720d4a917e600becd62476e44da74",  # create_mint
-            "520d080b833c7e4038a1aa214bba43a3fc97328e8f379a093b74ca3e32be5893",  # create_holding
-            "8c865d0184f55ce5a881e24c8c125cd3729c5f90a4b83d0484c8d1610f743f61",  # mint_to(60)
-            "c63168b7f615221ab2425b2ba003d32183f4df2e482eb4203e4e216675993d21",  # mint_to(40)
-            "8c4b08b5c750c57d0dbb4e9f43c32b7c0f2627ce5508da85408e3aaf01f5a331",  # set_mint_authority(None)
-            "6e92e605e932756332c9721a4e4754f155780069490b256fe67b35f374a972d1",  # post-revoke (rejected)
+            "338865e9549b18fb736020eaef87d5e20075b4250e10c00e08ea918c4871554a",  # ImageID == ProgramId
+            "4UARaVcJJoLxebFAobocsZyzpJ5TTUvvhRtFuHtuHypd",                       # program (base58)
+            "4gMBXeUskbUTzxoP8fJJEXj3jxTQz91m6ZW7fMsLMJq6",                       # mint PDA
+            "793992258d88e69c63cbede6fabec3ff5768d84d824d7ee9f3170f85fb717dce",  # deploy
+            "55908821088c98e898c4ef99e9a36e02856092f7afd0155f3457c25c5cf67746",  # create_mint
+            "8a37a8fb7200856c57d199ce081f2b744ed3cbaeec8326c83092f5ca05ac668f",  # create_holding
+            "daf5aa91f35dff8250794c0dcfe932de473c651bd25c946d76f09a42cfdb6a97",  # mint_to(60)
+            "ed07b29c004a796d504814ddf1a9a0cfda373d1618398b620e330ccb529b3cce",  # mint_to(40)
+            "719123f918df2aee42c4e69d36ba8860807b2a69c97a2927097d8313a508550e",  # set_mint_authority(None)
+            "016043771c0cc60efaf158ec120a9bf341326967c881285878469503ddd3d4fa",  # post-revoke (rejected)
         ]:
             self.assertIn(token, validator)
 

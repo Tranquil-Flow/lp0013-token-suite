@@ -1,25 +1,25 @@
 # LP-0013 — final submission status
 
-**As of 2026-06-04:** LP-0013 is complete for public evaluation.
+**As of 2026-06-27:** LP-0013 is complete for public evaluation.
 
-The corrected four-instruction guest is deployed on the public LEZ testnet (`testnet.lez.logos.co`, `RISC0_DEV_MODE=0`) with ProgramId/ImageID `32335764e583cd45684e0100ca63a3564a02274daa6ea6a5f758fad671b0a9ce` (base58 `4NxnuVrQBiwq2dCwZ3g3EnaD8JXGgBwEf6CR2a8L9JXF`). The final narrated demo video is recorded at https://youtu.be/rUgsCCPiQfo.
+The corrected four-instruction guest is deployed on the public LEZ testnet (`testnet.lez.logos.co`, `RISC0_DEV_MODE=0`) with ProgramId/ImageID `338865e9549b18fb736020eaef87d5e20075b4250e10c00e08ea918c4871554a` (base58 `4UARaVcJJoLxebFAobocsZyzpJ5TTUvvhRtFuHtuHypd`). The final narrated demo video is recorded at https://youtu.be/rUgsCCPiQfo.
 
 ## Final evidence
 
 | Step | Transaction hash | Verdict |
 |---|---|---|
-| deploy_program | `5b39deec38e49bb1bedf1956e5d7429ec20e3c009f0ccfe7a4fc449685cb4ce0` | `Some(ProgramDeployment)` |
-| create_mint | `7d1dcb04b5f339b33f04a120b7334cf9802720d4a917e600becd62476e44da74` | `Some(Public)` |
-| create_holding | `520d080b833c7e4038a1aa214bba43a3fc97328e8f379a093b74ca3e32be5893` | `Some(Public)` |
-| mint_to(60) | `8c865d0184f55ce5a881e24c8c125cd3729c5f90a4b83d0484c8d1610f743f61` | `Some(Public)` |
-| mint_to(40) | `c63168b7f615221ab2425b2ba003d32183f4df2e482eb4203e4e216675993d21` | `Some(Public)` |
-| set_mint_authority(None) | `8c4b08b5c750c57d0dbb4e9f43c32b7c0f2627ce5508da85408e3aaf01f5a331` | `Some(Public)` |
-| mint_to(post-revoke) | `6e92e605e932756332c9721a4e4754f155780069490b256fe67b35f374a972d1` | not included (`Transaction is None`) |
+| deploy_program | `793992258d88e69c63cbede6fabec3ff5768d84d824d7ee9f3170f85fb717dce` | `Some(ProgramDeployment)` |
+| create_mint | `55908821088c98e898c4ef99e9a36e02856092f7afd0155f3457c25c5cf67746` | `Some(Public)` |
+| create_holding | `8a37a8fb7200856c57d199ce081f2b744ed3cbaeec8326c83092f5ca05ac668f` | `Some(Public)` |
+| mint_to(60) | `daf5aa91f35dff8250794c0dcfe932de473c651bd25c946d76f09a42cfdb6a97` | `Some(Public)` |
+| mint_to(40) | `ed07b29c004a796d504814ddf1a9a0cfda373d1618398b620e330ccb529b3cce` | `Some(Public)` |
+| set_mint_authority(None) | `719123f918df2aee42c4e69d36ba8860807b2a69c97a2927097d8313a508550e` | `Some(Public)` |
+| mint_to(post-revoke) | `016043771c0cc60efaf158ec120a9bf341326967c881285878469503ddd3d4fa` | not included (`Transaction is None`) |
 
 Final decoded state:
 
-- Mint PDA: `HtCYkKN5K3dUVnPhJ4tCNpvDrnEcLZKgh8i4PkUjigfu`
-- Holding PDA: `4yswbZaRR1HQt4a5HS4uN7nLvAwL1txHTMSXKo1WZH2S`
+- Mint PDA: `4gMBXeUskbUTzxoP8fJJEXj3jxTQz91m6ZW7fMsLMJq6`
+- Holding PDA: `366n7Nj21EzD27BXRKE2hFDWPtJ1E2Fcx9RmqQoGRD7h`
 - Authority: `None`
 - Supply: `100`
 - Decimals: `6`

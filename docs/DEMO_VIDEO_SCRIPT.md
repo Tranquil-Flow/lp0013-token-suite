@@ -2,7 +2,7 @@
 
 Recording aid. Estimated 9–11 minutes at a comfortable reading pace.
 
-> **✅ Ready to record (2026-06-04).** The corrected guest is deployed + verified on the public testnet, and this script's on-chain scene narrates the corrected lifecycle — **two accumulating mints (60 + 40 → 100) and a post-revoke mint rejected by the authority guard**. The hashes in `scripts/demo-testnet-live.sh` are the corrected guest's; dry-run `bash scripts/demo-testnet-live.sh verify` once off-camera (it should exit 0) before recording Scene 5a. See `../RESUBMISSION_STATUS.md`.
+> **✅ Ready to record (2026-06-27).** The corrected guest is deployed + verified on the public testnet, and this script's on-chain scene narrates the corrected lifecycle — **two accumulating mints (60 + 40 → 100) and a post-revoke mint rejected by the authority guard**. The hashes in `scripts/demo-testnet-live.sh` are the corrected guest's; dry-run `bash scripts/demo-testnet-live.sh verify` once off-camera (it should exit 0) before recording Scene 5a. See `../RESUBMISSION_STATUS.md`.
 
 ## What this video demos
 
@@ -112,7 +112,7 @@ And this is a hand-written design reference. It documents the discriminators, th
 
 ## Scene 5 — On-chain proof, public testnet  (~3-4 min)
 
-[SHOW] Open `docs/LEZ_PROOF_LOG.md`, scroll to "Public testnet deploy + lifecycle (2026-06-04) — CORRECTED GUEST (load-bearing)".
+[SHOW] Open `docs/LEZ_PROOF_LOG.md`, scroll to "Public testnet deploy + lifecycle (2026-06-27) — CORRECTED GUEST (load-bearing)".
 
 [SAY]
 Now the on-chain part — and this is the heart of the submission.
